@@ -334,7 +334,7 @@ var Body = {
       } else {
         q1.copy(body.quaternion);
         parentEl.object3D.getWorldQuaternion(q2);
-        q1.premultiply(q2.invert());
+        q1.premultiply(q2.inverse());
         el.object3D.quaternion.copy(q1);
 
         v.copy(body.position);
