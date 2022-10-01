@@ -1,9 +1,11 @@
 var CANNON = require('cannon-es');
 const { threeToCannon, ShapeType } = require('three-to-cannon');
+const identityQuaternion = new THREE.Quaternion()
 
 function mesh2shape (object, options) {
+
   const result = threeToCannon(object, options);
-  return result.shape;
+  return result;
 }
 
 require('../../../lib/CANNON-shape2mesh');
@@ -69,13 +71,13 @@ var Body = {
         type: ShapeType[data.shape.toUpperCase()]
       });
 
-      var shape = mesh2shape(this.el.object3D, options);
+      var { shape, offset, orientation } = mesh2shape(this.el.object3D, options);
 
       if (!shape) {
         el.addEventListener('object3dset', this.initBody.bind(this));
         return;
       }
-      this.body.addShape(shape, shape.offset, shape.orientation);
+      this.body.addShape(shape, offset, orientation);
 
       // Show wireframe
       if (this.system.debug) {
