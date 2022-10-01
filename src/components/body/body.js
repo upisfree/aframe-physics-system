@@ -1,5 +1,10 @@
-var CANNON = require('cannon-es'),
-    mesh2shape = require('three-to-cannon').threeToCannon;
+var CANNON = require('cannon-es');
+const { threeToCannon, ShapeType } = require('three-to-cannon');
+
+function mesh2shape (object, options) {
+  const result = threeToCannon(object, options);
+  return result.shape;
+}
 
 require('../../../lib/CANNON-shape2mesh');
 
@@ -61,7 +66,7 @@ var Body = {
 
     if(data.shape !== 'none') {
       var options = data.shape === 'auto' ? undefined : AFRAME.utils.extend({}, this.data, {
-        type: mesh2shape.Type[data.shape.toUpperCase()]
+        type: ShapeType[data.shape.toUpperCase()]
       });
 
       var shape = mesh2shape(this.el.object3D, options);
