@@ -15,6 +15,7 @@
       <!-- Player -->
       <a-entity camera="userHeight: 1.6" look-controls wasd-controls position="0 0.1 0">
         <a-entity cursor
+                  raycaster="objects:[force-pushable]"
                   position="0 0 -0.5"
                   geometry="primitive: circle; radius: 0.01; segments: 4;"
                   material="color: #FF4444; shader: flat"></a-entity>
@@ -35,6 +36,7 @@
           shape__handle="shape: box;
                          halfExtents: 0.15 0.18 0.04;
                          offset: 0.4 0 0;"
+          force-pushable
       ></a-sphere>
     </a-scene>
   </body>

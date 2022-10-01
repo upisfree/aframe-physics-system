@@ -17,6 +17,7 @@
       <!-- Player -->
       <a-entity camera look-controls wasd-controls position="0 1.6 0">
         <a-entity cursor
+                  raycaster="objects:[force-pushable]"
                   position="0 0 -0.5"
                   geometry="primitive: circle; radius: 0.01; segments: 4;"
                   material="color: #FF4444; shader: flat"></a-entity>
