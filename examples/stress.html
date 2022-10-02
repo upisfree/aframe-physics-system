@@ -9,8 +9,18 @@
     <script src="https://cdn.rawgit.com/donmccurdy/aframe-extras/v6.1.1/dist/components/sphere-collider.js"></script>
     <script src="../dist/aframe-physics-system.js"></script>
     <script src="components/force-pushable.js"></script>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
+    <div class="text-overlay">
+      <p>Point the red reticle at a block, and click the mouse to apply a strong force to it.</p>
+      <p>Use mouse and WASD to look and move around.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/c-frame/aframe-physics-system/blob/master/examples/stress.html">
+        view code
+    </a>
     <a-scene stats="true"
              environment
              physics="driver: local; workerFps: 60;">

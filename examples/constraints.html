@@ -12,8 +12,19 @@
     <script src="../dist/aframe-physics-system.js"></script>
     <script src="components/grab.js"></script>
     <script src="components/force-pushable.js"></script>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
+    <div class="text-overlay">
+      <p>Demonstration of many Cannon driver constraints including cone twist,
+        hinge, lock, point to point, and distance constraints.</p>
+      <p>Click when the red reticle is over a red object to apply a force to it.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/c-frame/aframe-physics-system/blob/master/examples/constraints.html">
+        view code
+    </a>
     <a-scene environment>
       <a-entity teleport-controls hand-controls="hand: left" static-body="shape: sphere; sphereRadius: 0.02;" sphere-collider="objects: [dynamic-body];" grab></a-entity>
       <a-entity teleport-controls hand-controls="hand: right" static-body="shape: sphere; sphereRadius: 0.02;" sphere-collider="objects: [dynamic-body];" grab></a-entity>

@@ -9,8 +9,18 @@
     <script src="https://cdn.rawgit.com/donmccurdy/aframe-extras/v6.1.1/dist/components/sphere-collider.js"></script>
     <script src="../dist/aframe-physics-system.js"></script>
     <script src="components/force-pushable.js"></script>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
+    <div class="text-overlay">
+      <p>Compund shape, using the Cannon driver.</p>
+      <p>Click when the red reticle is over the sphere to apply a force to it.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/c-frame/aframe-physics-system/blob/master/examples/compound.html">
+        view code
+    </a>
     <a-scene environment physics="debug: true;">
       <!-- Player -->
       <a-entity camera look-controls wasd-controls position="0 1.6 0">
