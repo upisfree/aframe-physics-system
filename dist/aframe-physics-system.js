@@ -14680,6 +14680,7 @@ let AmmoBody = {
         data = this.data;
 
       this.localScaling = new Ammo.btVector3();
+      this.scaleVector = new THREE.Vector3();
 
       const obj = this.el.object3D;
       obj.getWorldPosition(pos);
@@ -14749,8 +14750,10 @@ let AmmoBody = {
       let updated = false;
 
       const obj = this.el.object3D;
-      if (this.data.scaleAutoUpdate && this.prevScale && !almostEqualsVector3(0.001, obj.scale, this.prevScale)) {
-        this.prevScale.copy(obj.scale);
+
+      obj.getWorldScale(this.scaleVector);
+      if (this.data.scaleAutoUpdate && this.prevScale && !almostEqualsVector3(0.001, this.scaleVector, this.prevScale)) {
+        this.prevScale.copy(this.scaleVector);
         updated = true;
 
         this.localScaling.setValue(this.prevScale.x, this.prevScale.y, this.prevScale.z);
@@ -14768,7 +14771,8 @@ let AmmoBody = {
           const collisionShapes = shapeComponent.getShapes();
           for (let j = 0; j < collisionShapes.length; j++) {
             const collisionShape = collisionShapes[j];
-            if (!collisionShape.added) {
+            if (collisionShape &&
+                !collisionShape.added) {
               this.compoundShape.addChildShape(collisionShape.localTransform, collisionShape);
               collisionShape.added = true;
             }
@@ -14997,8 +15001,8 @@ let AmmoBody = {
       const quaternion = this.msTransform.getRotation();
 
       const el = this.el,
-        parentEl = el.parentEl,
         body = this.body;
+      parentEl = el.object3D.parent.el ? el.object3D.parent.el : el.parentEl;
 
       if (!body) return;
       if (!parentEl) return;
