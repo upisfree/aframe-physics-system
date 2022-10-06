@@ -103,7 +103,6 @@ let AmmoBody = {
         data = this.data;
 
       this.localScaling = new Ammo.btVector3();
-      this.scaleVector = new THREE.Vector3();
 
       const obj = this.el.object3D;
       obj.getWorldPosition(pos);
@@ -173,10 +172,8 @@ let AmmoBody = {
       let updated = false;
 
       const obj = this.el.object3D;
-
-      obj.getWorldScale(this.scaleVector);
-      if (this.data.scaleAutoUpdate && this.prevScale && !almostEqualsVector3(0.001, this.scaleVector, this.prevScale)) {
-        this.prevScale.copy(this.scaleVector);
+      if (this.data.scaleAutoUpdate && this.prevScale && !almostEqualsVector3(0.001, obj.scale, this.prevScale)) {
+        this.prevScale.copy(obj.scale);
         updated = true;
 
         this.localScaling.setValue(this.prevScale.x, this.prevScale.y, this.prevScale.z);
@@ -194,8 +191,7 @@ let AmmoBody = {
           const collisionShapes = shapeComponent.getShapes();
           for (let j = 0; j < collisionShapes.length; j++) {
             const collisionShape = collisionShapes[j];
-            if (collisionShape &&
-                !collisionShape.added) {
+            if (!collisionShape.added) {
               this.compoundShape.addChildShape(collisionShape.localTransform, collisionShape);
               collisionShape.added = true;
             }
@@ -434,7 +430,7 @@ let AmmoBody = {
       // of object positioning etc.
       // For specific examples, and more discussion, see:
       // https://github.com/c-frame/aframe-physics-system/pull/1#issuecomment-1264686433
-      parentEl = el.object3D.parent.el ? el.object3D.parent.el : el.parentEl;
+      const parentEl = el.object3D.parent.el ? el.object3D.parent.el : el.parentEl;
 
       if (!body) return;
       if (!parentEl) return;
