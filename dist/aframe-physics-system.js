@@ -14779,8 +14779,7 @@ let AmmoBody = {
           const collisionShapes = shapeComponent.getShapes();
           for (let j = 0; j < collisionShapes.length; j++) {
             const collisionShape = collisionShapes[j];
-            if (collisionShape &&
-                !collisionShape.added) {
+            if (!collisionShape.added) {
               this.compoundShape.addChildShape(collisionShape.localTransform, collisionShape);
               collisionShape.added = true;
             }
