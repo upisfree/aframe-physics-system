@@ -423,6 +423,16 @@ let AmmoBody = {
         parentEl = el.parentEl,
         body = this.body;
 
+      // For the parent, prefer to use the THHREE.js scene graph parent (if it can be determined)
+      // and only use the HTML scene graph parent as a fallback.
+      // Usually these are the same, but there are various cases where it's useful to modify the THREE.js
+      // scene graph so that it deviates from the HTML.
+      // In these cases the THREE.js scene graph should be considered the definitive reference in terms
+      // of object positioning etc.
+      // For specific examples, and more discussion, see:
+      // https://github.com/c-frame/aframe-physics-system/pull/1#issuecomment-1264686433
+      parentEl = el.object3D.parent.el ? el.object3D.parent.el : el.parentEl;
+
       if (!body) return;
       if (!parentEl) return;
 
