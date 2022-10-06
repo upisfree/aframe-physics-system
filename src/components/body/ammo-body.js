@@ -420,7 +420,6 @@ let AmmoBody = {
       const quaternion = this.msTransform.getRotation();
 
       const el = this.el,
-        parentEl = el.parentEl,
         body = this.body;
 
       // For the parent, prefer to use the THHREE.js scene graph parent (if it can be determined)
@@ -431,7 +430,7 @@ let AmmoBody = {
       // of object positioning etc.
       // For specific examples, and more discussion, see:
       // https://github.com/c-frame/aframe-physics-system/pull/1#issuecomment-1264686433
-      parentEl = el.object3D.parent.el ? el.object3D.parent.el : el.parentEl;
+      const parentEl = el.object3D.parent.el ? el.object3D.parent.el : el.parentEl;
 
       if (!body) return;
       if (!parentEl) return;
