@@ -421,8 +421,8 @@ let AmmoBody = {
       const quaternion = this.msTransform.getRotation();
 
       const el = this.el,
+        parentEl = el.parentEl,
         body = this.body;
-      parentEl = el.object3D.parent.el ? el.object3D.parent.el : el.parentEl;
 
       if (!body) return;
       if (!parentEl) return;
