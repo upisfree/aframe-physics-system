@@ -103,7 +103,6 @@ let AmmoBody = {
         data = this.data;
 
       this.localScaling = new Ammo.btVector3();
-      this.scaleVector = new THREE.Vector3();
 
       const obj = this.el.object3D;
       obj.getWorldPosition(pos);
@@ -173,10 +172,8 @@ let AmmoBody = {
       let updated = false;
 
       const obj = this.el.object3D;
-
-      obj.getWorldScale(this.scaleVector);
-      if (this.data.scaleAutoUpdate && this.prevScale && !almostEqualsVector3(0.001, this.scaleVector, this.prevScale)) {
-        this.prevScale.copy(this.scaleVector);
+      if (this.data.scaleAutoUpdate && this.prevScale && !almostEqualsVector3(0.001, obj.scale, this.prevScale)) {
+        this.prevScale.copy(obj.scale);
         updated = true;
 
         this.localScaling.setValue(this.prevScale.x, this.prevScale.y, this.prevScale.z);
