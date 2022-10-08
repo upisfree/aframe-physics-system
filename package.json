@@ -38,7 +38,7 @@
   "bugs": {
     "url": "https://github.com/c-frame/aframe-physics-system/issues"
   },
-  "homepage": "https://github.com/c-frame/aframe-physics-system#readme",
+  "homepage": "https://c-frame.github.io/aframe-physics-system/",
   "dependencies": {
     "ammo-debug-drawer": "^0.1.0",
     "cannon-es": "^0.9.1",
