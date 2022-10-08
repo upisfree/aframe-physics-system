@@ -1,17 +1,13 @@
 # Physics for A-Frame VR
+A C-Frame fork, collectively maintained by the A-Frame community.
 
 [![Latest NPM release](https://img.shields.io/npm/v/aframe-physics-system.svg)](https://www.npmjs.com/package/aframe-physics-system)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/n5ro/aframe-physics-system/master/LICENSE)
-![Build](https://github.com/n5ro/aframe-physics-system/workflows/Build%20distribution/badge.svg)
-![Test](https://github.com/n5ro/aframe-physics-system/workflows/Browser%20testing%20CI/badge.svg)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/c-frame/aframe-physics-system/master/LICENSE)
+![Build](https://github.com/c-frame/aframe-physics-system/workflows/Build%20distribution/badge.svg)
+![Test](https://github.com/c-frame/aframe-physics-system/workflows/Browser%20testing%20CI/badge.svg)
 
 Components for A-Frame physics integration.
 Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https://github.com/kripken/ammo.js/)
-
-
-## New Features
-
-Ammo.js driver support has been added. Please see [Ammo Driver](/AmmoDriver.md) for documentation. CANNON.js support may be deprecated in the future.
 
 ## Contents
 
@@ -31,16 +27,16 @@ Ammo.js driver support has been added. Please see [Ammo Driver](/AmmoDriver.md) 
 
 ### Scripts
 
-In the [dist/](https://github.com/donmccurdy/aframe-physics-system/tree/master/dist) folder, download the full or minified build. Include the script on your page, and all components are automatically registered for you:
+In the [dist/](https://github.com/c-frame/aframe-physics-system/tree/master/dist) folder, download the full or minified build. Include the script on your page, and all components are automatically registered for you:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v$npm_package_version/dist/aframe-physics-system.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.1.0/dist/aframe-physics-system.min.js"></script>
 ```
 
 CDN builds for aframe-physics-system@v$npm_package_version:
 
-- [aframe-physics-system.js](https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v$npm_package_version/dist/aframe-physics-system.js) *(development)*
-- [aframe-physics-system.min.js](https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v$npm_package_version/dist/aframe-physics-system.min.js) *(production)*
+- [aframe-physics-system.js](https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.1.0/dist/aframe-physics-system.js) *(development)*
+- [aframe-physics-system.min.js](https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.1.0/dist/aframe-physics-system.min.js) *(production)*
 
 ### npm
 
