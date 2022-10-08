@@ -7,7 +7,9 @@ A C-Frame fork, collectively maintained by the A-Frame community.
 ![Test](https://github.com/c-frame/aframe-physics-system/workflows/Browser%20testing%20CI/badge.svg)
 
 Components for A-Frame physics integration.
-Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https://github.com/kripken/ammo.js/)
+
+Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https://github.com/kripken/ammo.js/). See
+[examples](https://c-frame.github.io/aframe-physics-system/examples/).
 
 ## Contents
 
