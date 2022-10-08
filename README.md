@@ -1,11 +1,12 @@
 # Physics for A-Frame VR
 A C-Frame fork, collectively maintained by the A-Frame community.
 
-[![Latest NPM release](https://img.shields.io/npm/v/aframe-physics-system.svg)](https://www.npmjs.com/package/aframe-physics-system)
+[![Latest NPM release](https://img.shields.io/npm/v/aframe-physics-system.svg)](https://www.npmjs.com/package/@c-frame/aframe-physics-system)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/c-frame/aframe-physics-system/master/LICENSE)
+<!--
 ![Build](https://github.com/c-frame/aframe-physics-system/workflows/Build%20distribution/badge.svg)
 ![Test](https://github.com/c-frame/aframe-physics-system/workflows/Browser%20testing%20CI/badge.svg)
-
+-->
 Components for A-Frame physics integration.
 
 Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https://github.com/kripken/ammo.js/). See
