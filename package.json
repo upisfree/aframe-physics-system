@@ -1,5 +1,5 @@
 {
-  "name": "aframe-physics-system",
+  "name": "@c-frame/aframe-physics-system",
   "version": "4.1.0",
   "description": "Physics system for A-Frame VR, built on Cannon.js & Ammo.js",
   "main": "index.js",
@@ -23,6 +23,9 @@
     "type": "git",
     "url": "git+https://github.com/c-frame/aframe-physics-system.git"
   },
+  "publishConfig": {
+    "registry":"https://npm.pkg.github.com"
+  },  
   "keywords": [
     "aframe",
     "aframevr",
@@ -73,5 +76,11 @@
     "sinon-chai": "^2.14.0",
     "three": ">=0.125.0",
     "uglify-es": "^3.3.9"
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "lib": "lib",
+    "test": "tests"
   }
 }
