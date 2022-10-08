@@ -311,5 +311,5 @@ Resources:
 
 To help demonstrate the features and capabilities of `aframe-physics-system` a
 collection of examples have been prepared. Please see
-[examples](https://c-frame.github.io/examples) for a summary and link to each of the
+[examples](https://c-frame.github.io/aframe-physics-system/examples/) for a summary and link to each of the
 prepared examples.
