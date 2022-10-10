@@ -31,7 +31,7 @@ Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https:/
 tldr:
 - cannon: easiest to use, lowest performance.
 - ammo: More features than cannon, but harder to use than cannon.
-- PhysX (not [yet] in this library): probably has as many features as Ammo, but many more gaps in terms of integration with A-Frame/Threejs.
+- PhysX (not [yet] in this library): probably has as many features as ammo, but many more gaps in terms of integration with A-Frame/Threejs.
 
 ## Installation
 
