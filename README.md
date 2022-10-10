@@ -1,7 +1,7 @@
 # Physics for A-Frame VR
 A C-Frame fork, collectively maintained by the A-Frame community. Also see [the wiki page](https://aframe.wiki/en/physics).
 
-[![Latest NPM release](https://img.shields.io/npm/v/aframe-physics-system.svg)](https://www.npmjs.com/package/@c-frame/aframe-physics-system)
+[![Latest NPM release](https://img.shields.io/npm/v/@c-frame/aframe-physics-system.svg)](https://www.npmjs.com/package/@c-frame/aframe-physics-system)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/c-frame/aframe-physics-system/master/LICENSE)
 <!--
 ![Build](https://github.com/c-frame/aframe-physics-system/workflows/Build%20distribution/badge.svg)
