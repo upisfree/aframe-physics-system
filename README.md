@@ -14,6 +14,7 @@ Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https:/
 
 ## Contents
 
++ [Picking an Engine](#picking-an-engine)
 + [Installation](#installation)
 + [Basics](#basics)
 + [Components](#components)
@@ -25,6 +26,12 @@ Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https:/
 + [Events](#events)
 + [System Configuration](#system-configuration)
 + [Examples](#examples)
+
+## Picking an engine
+tldr:
+- Cannon: easiest to use, lowest performance.
+- Ammo: More features than cannon, but harder to use than Cannon.
+- PhysX (not [yet] in this library): probably has as many features as Ammo, but many more gaps in terms of integration with A-Frame/Threejs.
 
 ## Installation
 
