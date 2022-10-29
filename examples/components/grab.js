@@ -13,6 +13,13 @@ AFRAME.registerComponent('grab', {
     this.onHit = this.onHit.bind(this);
     this.onGripOpen = this.onGripOpen.bind(this);
     this.onGripClose = this.onGripClose.bind(this);
+
+    if (this.el.sceneEl.getAttribute('physics').driver === "ammo") {
+      this.driver = "ammo"
+    }
+    else {
+      this.driver = "cannon"
+    }
   },
 
   play: function () {
@@ -47,8 +54,16 @@ AFRAME.registerComponent('grab', {
     if (!hitEl) { return; }
     hitEl.removeState(this.GRABBED_STATE);
     this.hitEl = undefined;
-    this.system.removeConstraint(this.constraint);
-    this.constraint = null;
+
+    if (this.driver === "cannon") {
+      this.system.removeConstraint(this.constraint);
+      this.constraint = null;
+    }
+    else {
+      // Ammo
+      this.hitEl.removeAttribute(`ammo_constraint__${this.el.id}`)
+    }
+    
   },
 
   onHit: function (evt) {
@@ -59,7 +74,15 @@ AFRAME.registerComponent('grab', {
     if (!hitEl || hitEl.is(this.GRABBED_STATE) || !this.grabbing || this.hitEl) { return; }
     hitEl.addState(this.GRABBED_STATE);
     this.hitEl = hitEl;
-    this.constraint = new CANNON.LockConstraint(this.el.body, hitEl.body, {maxForce: 100});
-    this.system.addConstraint(this.constraint);
+
+    if (this.driver === "cannon") {
+      this.constraint = new CANNON.LockConstraint(this.el.body, hitEl.body, {maxForce: 100});
+      this.system.addConstraint(this.constraint); 
+    }
+    else {
+      // Ammo
+      this.hitEl.setAttribute(`ammo_constraint__${this.el.id}`,
+                              { target: this.el.id })
+    }
   }
 });

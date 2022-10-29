@@ -34,8 +34,10 @@
                   material="color: #FF4444; shader: flat"></a-entity>
       </a-entity>
 
-      <a-entity static-body="shape: sphere; sphereRadius: 0.02;" hand-controls="hand: left" sphere-collider="objects: [ammo-body];" grab></a-entity>
-      <a-entity static-body="shape: sphere; sphereRadius: 0.02;" hand-controls="hand: right" sphere-collider="objects: [ammo-body];" grab></a-entity>
+      <a-entity id="left-hand" ammo-body="type: kinematic" ammo-shape="type: sphere; fit: manual; sphereRadius: 0.02;" 
+                hand-controls="hand: left" sphere-collider="objects: [force-pushable];" grab></a-entity>
+      <a-entity id="right-hand" ammo-body="type: kinematic" ammo-shape="type: sphere; fit: manual; sphereRadius: 0.02;"
+                hand-controls="hand: right" sphere-collider="objects: [force-pushable];" grab></a-entity>      
 
       <!-- Terrain -->
       <a-box width="75" height="0.1" depth="75" ammo-body="type: static" ammo-shape visible="false"></a-box>
