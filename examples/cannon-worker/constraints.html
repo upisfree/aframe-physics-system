@@ -26,7 +26,7 @@
         href="https://github.com/c-frame/aframe-physics-system/blob/master/examples/cannon-worker/constraints.html">
         view code
     </a>
-    <a-scene environment>
+    <a-scene physics="driver: worker" environment>
       <a-entity teleport-controls hand-controls="hand: left" static-body="shape: sphere; sphereRadius: 0.02;" sphere-collider="objects: [dynamic-body];" grab></a-entity>
       <a-entity teleport-controls hand-controls="hand: right" static-body="shape: sphere; sphereRadius: 0.02;" sphere-collider="objects: [dynamic-body];" grab></a-entity>
 
