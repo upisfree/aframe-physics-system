@@ -4,7 +4,7 @@ To help demonstrate the features and capabilities of `aframe-physics-system`
 the following collection of examples have been prepared.
 
 Examples marked "Broken" do not currently function as expected, due to open bugs.
-Examples marked "Limited" have limitations in terms of what function can be exercised (e.g. due to constraints on mouse interaction)
+Examples marked "Limited" have limitations in terms of what function can be exercised (e.g. due to constraints on mouse interaction, or limitations with particular driver implementations)
 
 | Example                                                      | Cannon                                 | Cannon Worker                                          | Ammo                                     |
 | ------------------------------------------------------------ | -------------------------------------- | ------------------------------------------------------ | ---------------------------------------- |
