@@ -265,6 +265,8 @@ Contact materials define what happens when two objects meet, including physical 
 > not block the main thread. However, scenes needing highly-responsive interaction (for example,
 > tossing and catching objects) may prefer to run physics locally, where feedback from the physics
 > system will be immediate.
+>
+> However, current status of the worker version of Cannon driver seems to be poor.  A number of functions that work with Cannon.js in local mode do not seem to work in driver mode.  See [examples](https://c-frame.github.io/aframe-physics-system/examples/) for an overview of the current status.
 
 | Property                       | Default | Description                                                  |
 | ------------------------------ | ------- | ------------------------------------------------------------ |
