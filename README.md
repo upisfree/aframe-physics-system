@@ -26,7 +26,7 @@ Which engine you pick will depend a lot on your specific requirements.  Currentl
 
 - a-frame-physics system with Cannon driver
 - a-frame-physics system with Ammo driver
-- [physx](https://github.com/c-frame/physx) (which uses nVidia physX as its driver).  Note that there is no current plan to integrate physX into aframe-physics-system, but it may be a better choice for some projects.
+- [physx](https://github.com/c-frame/physx) (which uses Nvidia physX as its driver).  Note that there is no current plan to integrate physX into aframe-physics-system, but it may be a better choice for some projects.
 
 Since each driver has a slightly different component interface and schema, it will require some significant updates to your code to switch from one driver to another, so it's worth taking some time up-front to consider which driver is most likely to suit your needs.
 
