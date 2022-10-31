@@ -24,7 +24,7 @@ AFRAME.registerComponent('grab', {
 
   play: function () {
     var el = this.el;
-    el.addEventListener('hit', this.onHit);
+    el.addEventListener('collide', this.onHit);
     el.addEventListener('gripdown', this.onGripClose);
     el.addEventListener('gripup', this.onGripOpen);
     el.addEventListener('trackpaddown', this.onGripClose);
@@ -35,7 +35,7 @@ AFRAME.registerComponent('grab', {
 
   pause: function () {
     var el = this.el;
-    el.removeEventListener('hit', this.onHit);
+    el.removeEventListener('collide', this.onHit);
     el.removeEventListener('gripdown', this.onGripClose);
     el.removeEventListener('gripup', this.onGripOpen);
     el.removeEventListener('trackpaddown', this.onGripClose);
@@ -67,7 +67,7 @@ AFRAME.registerComponent('grab', {
   },
 
   onHit: function (evt) {
-    var hitEl = evt.detail.el;
+    var hitEl = evt.detail.body.el;
     // If the element is already grabbed (it could be grabbed by another controller).
     // If the hand is not grabbing the element does not stick.
     // If we're already grabbing something you can't grab again.
