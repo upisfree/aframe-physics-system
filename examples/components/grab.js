@@ -10,7 +10,8 @@ AFRAME.registerComponent('grab', {
     this.constraint = /** @type {CANNON.Constraint} */ null;
 
     // Bind event handlers
-    this.onHit = this.onHit.bind(this);
+    this.onHitCannon = this.onHitCannon.bind(this);
+    this.onHitAmmo = this.onHitAmmo.bind(this);
     this.onGripOpen = this.onGripOpen.bind(this);
     this.onGripClose = this.onGripClose.bind(this);
 
@@ -24,7 +25,8 @@ AFRAME.registerComponent('grab', {
 
   play: function () {
     var el = this.el;
-    el.addEventListener('collide', this.onHit);
+    el.addEventListener('collide', this.onHitCannon);
+    el.addEventListener('collidestart', this.onHitAmmo);
     el.addEventListener('gripdown', this.onGripClose);
     el.addEventListener('gripup', this.onGripOpen);
     el.addEventListener('trackpaddown', this.onGripClose);
@@ -35,7 +37,8 @@ AFRAME.registerComponent('grab', {
 
   pause: function () {
     var el = this.el;
-    el.removeEventListener('collide', this.onHit);
+    el.removeEventListener('collide', this.onHitCannon);
+    el.removeEventListener('collidestart', this.onHitAmmo);
     el.removeEventListener('gripdown', this.onGripClose);
     el.removeEventListener('gripup', this.onGripOpen);
     el.removeEventListener('trackpaddown', this.onGripClose);
@@ -53,7 +56,6 @@ AFRAME.registerComponent('grab', {
     this.grabbing = false;
     if (!hitEl) { return; }
     hitEl.removeState(this.GRABBED_STATE);
-    this.hitEl = undefined;
 
     if (this.driver === "cannon") {
       this.system.removeConstraint(this.constraint);
@@ -61,28 +63,34 @@ AFRAME.registerComponent('grab', {
     }
     else {
       // Ammo
-      this.hitEl.removeAttribute(`ammo_constraint__${this.el.id}`)
+      this.hitEl.removeAttribute(`ammo-constraint__${this.el.id}`)
     }
+    this.hitEl = undefined;
     
   },
 
-  onHit: function (evt) {
+  onHitCannon: function (evt) {
     var hitEl = evt.detail.body.el;
     // If the element is already grabbed (it could be grabbed by another controller).
     // If the hand is not grabbing the element does not stick.
     // If we're already grabbing something you can't grab again.
     if (!hitEl || hitEl.is(this.GRABBED_STATE) || !this.grabbing || this.hitEl) { return; }
     hitEl.addState(this.GRABBED_STATE);
-    this.hitEl = hitEl;
+    this.hitEl = hitEl;    
+    this.constraint = new CANNON.LockConstraint(this.el.body, hitEl.body, {maxForce: 100});
+    this.system.addConstraint(this.constraint); 
 
-    if (this.driver === "cannon") {
-      this.constraint = new CANNON.LockConstraint(this.el.body, hitEl.body, {maxForce: 100});
-      this.system.addConstraint(this.constraint); 
-    }
-    else {
-      // Ammo
-      this.hitEl.setAttribute(`ammo_constraint__${this.el.id}`,
-                              { target: this.el.id })
-    }
+  },
+
+  onHitAmmo: function (evt) {
+    var hitEl = evt.detail.targetEl;
+    // If the element is already grabbed (it could be grabbed by another controller).
+    // If the hand is not grabbing the element does not stick.
+    // If we're already grabbing something you can't grab again.
+    if (!hitEl || hitEl.is(this.GRABBED_STATE) || !this.grabbing || this.hitEl) { return; }
+    hitEl.addState(this.GRABBED_STATE);
+    this.hitEl = hitEl;
+    this.hitEl.setAttribute(`ammo-constraint__${this.el.id}`,
+                            { target: `#${this.el.id}` })    
   }
 });
