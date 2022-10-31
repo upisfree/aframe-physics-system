@@ -82,5 +82,8 @@
     "example": "examples",
     "lib": "lib",
     "test": "tests"
+  },
+  "engines": {
+    "npm": ">=7"
   }
 }
