@@ -127,7 +127,7 @@ This list is probably incomplete, so if you find an additional significant limit
 
 - No support for off-center attachment of spring constraints to bodies (integration issue?)
 
-- No support for slider constraint (integration issue?) 
+- No support for slider constraint (slider constraint is like a bead on an abacus) (integration issue?) 
 
   
 
