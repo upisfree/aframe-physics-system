@@ -118,6 +118,8 @@ This list is probably incomplete, so if you find an additional significant limit
 - No support for collision filtering - all object pairs 
 - Restitution (bounciness) is a global property, rather than per-body
 - No stateful collision data - just a stream of events that starts when collision is happening, and stops when collision ends (compare Ammo, which offers distinct collide-start, collide-end events and collision state that can be queried at any time; no idea yet what PhysX offers here...)
+  - But see: https://github.com/wmurphyrd/aframe-physics-extras#collision-filter for an extension that enables this.
+
 
 
 
@@ -138,4 +140,4 @@ This list is probably incomplete, so if you find an additional significant limit
 
 ## Examples
 
-To help demonstrate the features and capabilities of `aframe-physics-system` a collection of examples have been prepared. Please see [examples](https://c-frame.github.io/aframe-physics-system/examples/) for a summary and link to each of the prepared examples.
+To help demonstrate the features and capabilities of `aframe-physics-system` a collection of examples have been prepared. Please see [examples](https://c-frame.github.io/aframe-physics-system/examples/) for a summary and link to each of the prepared examples.			
