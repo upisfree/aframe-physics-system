@@ -125,9 +125,9 @@ This list is probably incomplete, so if you find an additional significant limit
 
 ### Ammo.js
 
-- No support for off-center attachment of constraints to bodies (integration issue?)
+- No support for off-center attachment of spring constraints to bodies (integration issue?)
 
-- No support for slider constraint (integration issue?)
+- No support for slider constraint (integration issue?) 
 
   
 
