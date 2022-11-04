@@ -22,7 +22,7 @@ CDN builds for aframe-physics-system@v$npm_package_version:
 ### npm
 
 ```
-npm install --save aframe-physics-system
+npm install --save @c-frame/aframe-physics-system
 ```
 
 ```javascript
