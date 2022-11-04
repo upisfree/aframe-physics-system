@@ -16256,6 +16256,10 @@ let AmmoBody = {
         Ammo.destroy(angularFactor);
       }
 
+      if (prevData.restitution != data.restitution ) {
+        console.warn("ammo-body restitution cannot be updated from its initial value.")
+      }
+
       //TODO: support dynamic update for other properties
     }
   },
