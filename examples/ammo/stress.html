@@ -6,7 +6,6 @@
     <title>Examples • Stress Test AMMO</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component@1.3.1/dist/aframe-environment-component.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/components/sphere-collider.min.js"></script>
     <script src="https://mixedreality.mozilla.org/ammo.js/builds/ammo.wasm.js"></script>
     <script src="../../dist/aframe-physics-system.js"></script>
     <script src="../components/force-pushable.js"></script>
@@ -36,9 +35,9 @@
       </a-entity>
 
       <a-entity id="left-hand" ammo-body="type: kinematic; emitCollisionEvents: true" ammo-shape="type: sphere; fit: manual; sphereRadius: 0.02;" 
-                hand-controls="hand: left" sphere-collider="objects: [force-pushable];" grab></a-entity>
+                hand-controls="hand: left" grab></a-entity>
       <a-entity id="right-hand" ammo-body="type: kinematic; emitCollisionEvents: true" ammo-shape="type: sphere; fit: manual; sphereRadius: 0.02;"
-                hand-controls="hand: right" sphere-collider="objects: [force-pushable];" grab></a-entity>    
+                hand-controls="hand: right" grab></a-entity>    
 
       <!-- Terrain -->
       <a-box width="75" height="0.1" depth="75" ammo-body="type: static" ammo-shape visible="false"></a-box>

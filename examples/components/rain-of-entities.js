@@ -44,11 +44,7 @@ AFRAME.registerComponent('rain-of-entities', {
       if (box.object3D.position.y > 0) return;
       this.recycleBox(box);
     }.bind(this), this.data.lifetime);
-
-    var colliderEls = this.el.sceneEl.querySelectorAll('[sphere-collider]');
-    for (var i = 0; i < colliderEls.length; i++) {
-      colliderEls[i].components['sphere-collider'].update();
-    }
+    
   },
   randomPosition: function () {
     var spread = this.data.spread;
