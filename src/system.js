@@ -56,6 +56,10 @@ module.exports = AFRAME.registerSystem('physics', {
     // If true, show wireframes around physics bodies.
     this.debug = data.debug;
 
+    // Data used for performance monitoring.
+    this.cumTimeEngine = 0;
+    this.cumTimeWrapper = 0;
+
     this.callbacks = {beforeStep: [], step: [], afterStep: []};
 
     this.listeners = {};
@@ -141,6 +145,8 @@ module.exports = AFRAME.registerSystem('physics', {
   tick: function (t, dt) {
     if (!this.initialized || !dt) return;
 
+    const wrapperStartTime = Date.now();
+
     var i;
     var callbacks = this.callbacks;
 
@@ -148,7 +154,14 @@ module.exports = AFRAME.registerSystem('physics', {
       this.callbacks.beforeStep[i].beforeStep(t, dt);
     }
 
+    const engineStartTime = Date.now();
+
     this.driver.step(Math.min(dt / 1000, this.data.maxInterval));
+
+    const engineEndTime = Date.now();
+    this.cumTimeEngine += engineEndTime;
+    this.cumTimeEngine -= engineStartTime;
+    this.tickCounter++;
     
     for (i = 0; i < callbacks.step.length; i++) {
       callbacks.step[i].step(t, dt);
@@ -156,6 +169,22 @@ module.exports = AFRAME.registerSystem('physics', {
 
     for (i = 0; i < callbacks.afterStep.length; i++) {
       callbacks.afterStep[i].afterStep(t, dt);
+    }
+
+    const wrapperEndTime = Date.now();
+    this.cumTimeWrapper += wrapperEndTime;
+    this.cumTimeWrapper -= wrapperStartTime;
+    this.cumTimeWrapper -= engineEndTime;
+    this.cumTimeWrapper += engineStartTime;
+
+    if (this.tickCounter === 100) {
+      console.log(`Avg. physics tick duration (engine): ${this.cumTimeEngine / 100} msecs`);
+      console.log(`Avg. physics tick duration (wrapper): ${this.cumTimeWrapper / 100} msecs`);
+      this.el.emit("physics-tick-timer", {engine: this.cumTimeEngine / 100,
+                                          wrapper: this.cumTimeWrapper / 100})
+      this.tickCounter = 0;
+      this.cumTimeEngine = 0;
+      this.cumTimeWrapper = 0;
     }
   },
 
