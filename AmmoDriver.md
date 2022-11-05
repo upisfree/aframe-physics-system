@@ -127,6 +127,7 @@ An `ammo-body` component may be added to any entity in a scene. While having onl
 | collisionFilterGroup     | `1`        | 32-bit bitmask to determine what collision "group" this object belongs to. See: [Collision Filtering](#collision-filtering).                            |
 | collisionFilterMask      | `1`        | 32-bit bitmask to determine what collision "groups" this object should collide with. See: [Collision Filtering](#collision-filtering).                 |
 | scaleAutoUpdate          | `true`     | Should the shapes of the objecct be automatically scaled to match the scale of the entity.                                                              |
+| restitution              | 0          | Coefficient of restitution (bounciness).  Note that this must be set to a non-zero value on *both* objects to get bounce from a collision.<br/>This value cannot be changed after initialization of the `ammo-body`.   |
 
 #### `ammo-body` type
 

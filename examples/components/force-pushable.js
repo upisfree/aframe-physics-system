@@ -11,11 +11,34 @@ AFRAME.registerComponent('force-pushable', {
     force: { default: 10 }
   },
   init: function () {
+
+    if (this.el.sceneEl.getAttribute('physics').driver === "ammo") {
+      this.driver = "ammo"
+    }
+    else {
+      this.driver = "cannon"
+    }
+
     this.pStart = new THREE.Vector3();
     this.sourceEl = this.el.sceneEl.querySelector('[camera]');
-    this.el.addEventListener('click', this.forcePush.bind(this));
+
+    if (this.driver === "cannon") {
+      this.el.addEventListener('click', this.forcePushCannon.bind(this));
+    }
+    else {
+      this.el.addEventListener('click', this.forcePushAmmo.bind(this));
+
+      this.force = new THREE.Vector3();
+      this.pos = new THREE.Vector3();
+
+      this.el.addEventListener("body-loaded", e => {
+        this.impulseBtVector = new Ammo.btVector3();
+        this.posBtVector = new Ammo.btVector3();
+      });
+    }
   },
-  forcePush: function () {
+
+  forcePushCannon: function () {
     var force,
         el = this.el,
         pStart = this.pStart.copy(this.sourceEl.getAttribute('position'));
@@ -26,5 +49,31 @@ AFRAME.registerComponent('force-pushable', {
     force.scale(this.data.force, force);
 
     el.body.applyImpulse(force, el.body.position);
+  },
+
+  forcePushAmmo: function (e) {
+
+    if (!this.impulseBtVector) return;
+
+    const el = this.el
+    const force = this.force
+    const impulseBt = this.impulseBtVector
+    force.copy(el.object3D.position)
+    force.normalize();
+
+    // not sure about units, but force seems much stronger with Ammo than Cannon, so scaling down
+    // by a factor of 10.
+    force.multiplyScalar(this.data.force / 10);
+    impulseBt.setValue(force.x, force.y, force.z)
+
+    // use data from intersection to determine point at which to apply impulse.
+    const pos = this.pos
+    const posBt = this.posBtVector
+    pos.copy(e.detail.intersection.point)
+    el.object3D.worldToLocal(pos)
+    posBt.setValue(pos.x, pos.y, pos.z)
+
+    el.body.activate()
+    el.body.applyImpulse(impulseBt, posBt);
   }
 });

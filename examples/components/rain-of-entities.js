@@ -41,18 +41,10 @@ AFRAME.registerComponent('rain-of-entities', {
 
     // Recycling is important, kids.
     setInterval(function () {
-      if (box.body.position.y > 0) return;
-      box.body.position.copy(this.randomPosition());
-      box.body.quaternion.set(0, 0, 0, 1);
-      box.body.velocity.set(0, 0, 0);
-      box.body.angularVelocity.set(0, 0, 0);
-      box.body.updateProperties();
+      if (box.object3D.position.y > 0) return;
+      this.recycleBox(box);
     }.bind(this), this.data.lifetime);
-
-    var colliderEls = this.el.sceneEl.querySelectorAll('[sphere-collider]');
-    for (var i = 0; i < colliderEls.length; i++) {
-      colliderEls[i].components['sphere-collider'].update();
-    }
+    
   },
   randomPosition: function () {
     var spread = this.data.spread;
@@ -61,5 +53,38 @@ AFRAME.registerComponent('rain-of-entities', {
       y: 3,
       z: Math.random() * spread - spread / 2
     };
+  },
+
+  recycleBox(box) {
+
+    if (box.body.position) {
+      this.recycleBoxCannon(box) 
+    }
+    else {
+      this.recycleBoxAmmo(box) 
+    }
+  },
+
+  recycleBoxCannon(box) {
+    box.body.position.copy(this.randomPosition());
+    box.body.quaternion.set(0, 0, 0, 1);
+    box.body.velocity.set(0, 0, 0);
+    box.body.angularVelocity.set(0, 0, 0);
+    box.body.updateProperties();
+  },
+
+  recycleBoxAmmo(box) {
+
+    // recycling (i.e. teleporting an object to a new position / velocity) is
+    // not something that can be done in Ammo.
+
+    // instead we remove the ammo-body component, modify the object3D position & re-add the ammo-body.
+    box.removeAttribute("ammo-shape")
+    box.removeAttribute("ammo-body")
+    box.object3D.position.copy(this.randomPosition());
+    box.object3D.quaternion.identity();
+    box.setAttribute("ammo-body", "")
+    box.setAttribute("ammo-shape", "")
+    
   }
 });

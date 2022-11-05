@@ -3,45 +3,17 @@
 To help demonstrate the features and capabilities of `aframe-physics-system`
 the following collection of examples have been prepared.
 
-- [**Ammo sandbox**](ammo.html)  
-  Demonstration of many [Ammo driver](../AmmoDriver.md) features in a single
-  example.
+Examples marked "Broken" do not currently function as expected, due to open bugs.
+Examples marked "Limited" have limitations in terms of what function can be exercised (e.g. due to constraints on mouse interaction, or limitations with particular driver implementations)
 
-- [**Cannon.js sandbox**](cannon.html)  
-  Demonstration of many Cannon driver features in a single example.
+| Example                                                      | Cannon                                 | Cannon Worker                                          | Ammo                                     |
+| ------------------------------------------------------------ | -------------------------------------- | ------------------------------------------------------ | ---------------------------------------- |
+| Demonstration of many features in a single example.          | [**OK**](cannon/sandbox.html)     | [**Broken**](cannon-worker/sandbox.html)           | [**OK**](ammo/sandbox.html)         |
+| Construct a [compound shape](../README.md#shape) and simulate collision with a ground plane. | [**OK**](cannon/compound.html)    | [**Broken**](cannon-worker/compound.html)          | [**OK**](ammo/compound.html) |
+| Demonstration of many constraints including cone twist, hinge, lock, point to point, slider (Ammo only) and distance (Cannon only) constraints. | [**OK**](cannon/constraints.html) | [**Broken**](cannon-worker/constraints.html) | [**OK**](ammo/constraints.html) |
+| Bounce simulation with [restitution (bounciness)](../README.md#system-configuration) of 1. | [**OK**](cannon/materials.html)   | [**Limited**](cannon-worker/materials.html)   | [**OK**](ammo/materials.html) |
+| Four vertical [springs](../README.md#spring) each between two boxes with an assortment of damping and stiffness values | [**OK**](cannon/spring.html)     | [**OK**](cannon-worker/spring.html)              | [**Limited**](ammo/spring.html) |
+| Apply [strong impulse](../README.md#using-the-cannonjs-api) to a cube when the user clicks with a mouse. Cubes are arranged in four 4x3 walls. | [**OK**](cannon/stress.html)      | [**Limited**](cannon-worker/stress.html)      | [**OK**](ammo/stress.html) |
+| Animate a long wall moving along the z-axis along the initial view direction. | [**OK**](cannon/sweeper.html)     | [**Broken**](cannon-worker/sweeper.html)           | [**OK**](ammo/sweeper.html) |
+| Remove a [dynamic body](../README.md#dynamic-body-and-static-body) from the scene after 100 frames | [**OK**](cannon/ttl.html)         | [**Broken**](cannon-worker/ttl.html)               | [**OK**](ammo/ttl.html) |
 
-- [**Compound**](compound.html)  
-  Construct a [compound shape](../README.md#shape) and simulate collision with
-  a ground plane using the Cannon driver.
-
-- [**Constraints with Ammo**](constraints-ammo.html)  
-  Demonstration of many
-  [Ammo driver constraints](../AmmoDriver.md#ammo-constraint) including cone
-  twist, hinge, lock, point to point, and slider constraints.
-
-- [**Constraints with Cannon**](constraints.html)  
-  Demonstration of many
-  [Cannon driver constraints](../README.md#constraint) including cone twist,
-  hinge, lock, point to point, and distance constraints.
-
-- [**Materials**](materials.html)  
-  Bounce simulation with
-  [restitution (bounciness)](../README.md#system-configuration) of 1 using the
-  Cannon driver.
-
-- [**Spring**](spring.html)  
-  Four vertical [springs](../README.md#spring) each between two boxes with an
-  assortment of damping and stiffness values using the Cannon driver.
-
-- [**Stress**](stress.html)  
-  Apply [strong impulse](../README.md#using-the-cannonjs-api) to a cube when the
-  user clicks with a mouse using the Cannon driver. Cubes are arranged in four
-  4x3 walls.
-
-- [**Sweeper**](sweeper.html)  
-  Animate a long wall moving along the z-axis along the initial view direction
-  using the velocity component and the Cannon driver.
-
-- [**Time to live**](ttl.html)  
-  Remove a [dynamic body](../README.md#dynamic-body-and-static-body) from the
-  scene after 100 frames using the Cannon driver.

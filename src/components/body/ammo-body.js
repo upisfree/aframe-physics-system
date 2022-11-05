@@ -61,7 +61,8 @@ let AmmoBody = {
     disableCollision: { default: false },
     collisionFilterGroup: { default: 1 }, //32-bit mask,
     collisionFilterMask: { default: 1 }, //32-bit mask
-    scaleAutoUpdate: { default: true }
+    scaleAutoUpdate: { default: true },
+    restitution: {default: 0} // does not support updates
   },
 
   /**
@@ -101,6 +102,7 @@ let AmmoBody = {
     return function() {
       const el = this.el,
         data = this.data;
+      const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 
       this.localScaling = new Ammo.btVector3();
 
@@ -130,6 +132,7 @@ let AmmoBody = {
         this.compoundShape,
         this.localInertia
       );
+      this.rbInfo.m_restitution = clamp(this.data.restitution, 0, 1);
       this.body = new Ammo.btRigidBody(this.rbInfo);
       this.body.setActivationState(ACTIVATION_STATES.indexOf(data.activationState) + 1);
       this.body.setSleepingThresholds(data.linearSleepingThreshold, data.angularSleepingThreshold);
@@ -323,6 +326,10 @@ let AmmoBody = {
         const angularFactor = new Ammo.btVector3(data.angularFactor.x, data.angularFactor.y, data.angularFactor.z);
         this.body.setAngularFactor(angularFactor);
         Ammo.destroy(angularFactor);
+      }
+
+      if (prevData.restitution != data.restitution ) {
+        console.warn("ammo-body restitution cannot be updated from its initial value.")
       }
 
       //TODO: support dynamic update for other properties

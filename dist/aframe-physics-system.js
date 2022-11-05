@@ -15780,7 +15780,11 @@ module.exports = AFRAME.registerComponent("ammo-constraint", {
 
     // An axis that each body can rotate around, defined locally to that body. Used for hinge constraints.
     axis: { type: "vec3", default: { x: 0, y: 0, z: 1 } },
-    targetAxis: { type: "vec3", default: { x: 0, y: 0, z: 1 } }
+    targetAxis: { type: "vec3", default: { x: 0, y: 0, z: 1 } },
+
+    // damping & stuffness - used for spring contraints only
+    damping: { type: "number", default: 1 },
+    stiffness: { type: "number", default: 100 },
   },
 
   init: function() {
@@ -15848,7 +15852,20 @@ module.exports = AFRAME.registerComponent("ammo-constraint", {
       }
       case CONSTRAINT.SPRING: {
         constraint = new Ammo.btGeneric6DofSpringConstraint(body, targetBody, bodyTransform, targetTransform, true);
-        //TODO: enableSpring, setStiffness and setDamping
+
+        // Very limited initial implementation of spring constraint.
+        // See: https://github.com/n5ro/aframe-physics-system/issues/171
+        for (var i in [0,1,2,3,4,5]) {
+          constraint.enableSpring(1, true)
+          constraint.setStiffness(1, this.data.stiffness)
+          constraint.setDamping(1, this.data.damping)
+        }
+        const upper = new Ammo.btVector3(-1, -1, -1);
+        const lower = new Ammo.btVector3(1, 1, 1);
+        constraint.setLinearUpperLimit(upper);
+        constraint.setLinearLowerLimit(lower)
+        Ammo.destroy(upper);
+        Ammo.destroy(lower);
         break;
       }
       case CONSTRAINT.SLIDER: {
@@ -15972,7 +15989,8 @@ let AmmoBody = {
     disableCollision: { default: false },
     collisionFilterGroup: { default: 1 }, //32-bit mask,
     collisionFilterMask: { default: 1 }, //32-bit mask
-    scaleAutoUpdate: { default: true }
+    scaleAutoUpdate: { default: true },
+    restitution: {default: 0} // does not support updates
   },
 
   /**
@@ -16012,6 +16030,7 @@ let AmmoBody = {
     return function() {
       const el = this.el,
         data = this.data;
+      const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 
       this.localScaling = new Ammo.btVector3();
 
@@ -16041,6 +16060,7 @@ let AmmoBody = {
         this.compoundShape,
         this.localInertia
       );
+      this.rbInfo.m_restitution = clamp(this.data.restitution, 0, 1);
       this.body = new Ammo.btRigidBody(this.rbInfo);
       this.body.setActivationState(ACTIVATION_STATES.indexOf(data.activationState) + 1);
       this.body.setSleepingThresholds(data.linearSleepingThreshold, data.angularSleepingThreshold);
@@ -16234,6 +16254,10 @@ let AmmoBody = {
         const angularFactor = new Ammo.btVector3(data.angularFactor.x, data.angularFactor.y, data.angularFactor.z);
         this.body.setAngularFactor(angularFactor);
         Ammo.destroy(angularFactor);
+      }
+
+      if (prevData.restitution != data.restitution ) {
+        console.warn("ammo-body restitution cannot be updated from its initial value.")
       }
 
       //TODO: support dynamic update for other properties

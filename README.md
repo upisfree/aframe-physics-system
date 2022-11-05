@@ -17,309 +17,127 @@ Supports [CANNON.js](http://schteppe.github.io/cannon.js/) and [Ammo.js](https:/
 + [Picking an Engine](#picking-an-engine)
 + [Installation](#installation)
 + [Basics](#basics)
-+ [Components](#components)
-  + [`dynamic-body` and `static-body`](#dynamic-body-and-static-body)
-  + [`shape`](#shape)
-  + [`constraint`](#constraint)
-  + [`spring`](#spring)
-+ [Using the CANNON.js API](#using-the-cannonjs-api)
-+ [Events](#events)
-+ [System Configuration](#system-configuration)
++ [Constraints and APIs](#constraints-and-apis)
++ [Driver-specific limitations](#driver-specific-limitations)
 + [Examples](#examples)
 
 ## Picking an engine
-tldr:
-- cannon: easiest to use, lowest performance.
-- ammo: More features than cannon, but harder to use than cannon.
-- PhysX (not [yet] in this library): probably has as many features as ammo, but many more gaps in terms of integration with A-Frame/Threejs.
+Which engine you pick will depend a lot on your specific requirements.  Currently there are 3 options for A-Frame physics that may be worth considering:
+
+- a-frame-physics system with Cannon driver
+- a-frame-physics system with Ammo driver
+- [physx](https://github.com/c-frame/physx) (which uses Nvidia physX as its driver).  Note that there is no current plan to integrate physX into aframe-physics-system, but it may be a better choice for some projects.
+
+Since each driver has a slightly different component interface and schema, it will require some significant updates to your code to switch from one driver to another, so it's worth taking some time up-front to consider which driver is most likely to suit your needs.
+
+At a high level:
+
+- The Cannon driver is the easiest to use, but as a native JavaScript solution, it has the worst performance
+- The Ammo driver is harder to use, but has significantly better performance
+  - Ammo is a WASM build of the Bullet physics engine, which is a widely used open source physics engine.
+- PhysX has the best performance (approx. 2x faster than Ammo.js), and is easy to use for simple use cases, but is more of an unknown quantity in terms of integration with A-Frame for more complex functions like constraints and APIs 
+  - The PhysX physics engine is the default physics engine used by both Unity and Unreal Engine.
+
+For each of these drivers, there is the potential for specific limitations that could be problematic.  These could be limitations
+
+- in the physics engine itself
+- in the version of the physics engine being used (which may not be the latest version)
+- or, in the integration of the phsyics engine with aframe-physics-system (or physx).
+
+See [Driver-specific Limitations](#driver-specific-limitations) below for a list of known driver-specific limitations.
 
 ## Installation
 
-### Scripts
+Installation instructions vary slightly depending on the driver being used, so see detailed documentation for each driver 
 
-In the [dist/](https://github.com/c-frame/aframe-physics-system/tree/master/dist) folder, download the full or minified build. Include the script on your page, and all components are automatically registered for you:
+- [Cannon.js](CannonDriver.md#installation)
 
-```html
-<script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.1.0/dist/aframe-physics-system.min.js"></script>
-```
+- [Ammo.js](AmmoDriver.md#installation)
 
-CDN builds for aframe-physics-system@v$npm_package_version:
-
-- [aframe-physics-system.js](https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.1.0/dist/aframe-physics-system.js) *(development)*
-- [aframe-physics-system.min.js](https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.1.0/dist/aframe-physics-system.min.js) *(production)*
-
-### npm
-
-```
-npm install --save aframe-physics-system
-```
-
-```javascript
-// my-app.js
-require('aframe-physics-system');
-```
-
-Once installed, you'll need to compile your JavaScript using something like [Browserify](http://browserify.org/) or [Webpack](http://webpack.github.io/). Example:
-
-```bash
-npm install -g browserify
-browserify my-app.js -o bundle.js
-```
-
-`bundle.js` may then be included in your page. See [here](http://browserify.org/#middle-section) for a better introduction to Browserify.
-
-#### npm + webpack
-
-When using webpack, you need to ensure that your `loader` for `.js` files includes this dependency. The example below assumes you're using Babel.
-
-```js
-{
-  test: /\.js$/,
-  include: ['src', require.resolve('aframe-physics-system') ],
-  use: {
-    loader: 'babel-loader', // or whatever loader you're using to parse modules
-    options: {}
-  }
-}
-```
-
-> **Note**: You cannot use `exclude: /node_modules` for your `.js` loader. You must instead use `include` and pass an array of directories as dependencies to transpile.
+  
 
 ## Basics
 
-```html
-<!-- The debug:true option creates a wireframe around each physics body. If you don't see a wireframe,
-     the physics system may be unable to parse your model without a shape:box or shape:hull option. -->
-<a-scene physics="debug: true">
+The components and schemas for aframe-physics system vary depending on whether you are using the Cannon.js or Ammo.js driver.
 
-  <!-- Camera -->
-  <a-entity camera look-controls></a-entity>
+See detailed documentation for each driver 
 
-  <!-- Floor -->
-  <a-plane static-body></a-plane>
+- [Cannon.js](CannonDriver.md#basics)
 
-  <!-- Immovable box -->
-  <a-box static-body position="0 0.5 -5" width="3" height="1" depth="1"></a-box>
+- [Ammo.js](AmmoDriver.md#basics)
 
-  <!-- Dynamic box -->
-  <a-box dynamic-body position="5 0.5 0" width="1" height="1" depth="1"></a-box>
+Although the syntax for each driver is different, the basic concepts are the same.
 
-</a-scene>
-```
+- A `physics` component is added to the `<a-scene>`.  The `driver` property of this component indicates which driver to use.  The `debug` property can be set to `true` to get some useful visual hints from the physics engine.  There are also various other driver-specific scene-level settings.
+- For physics to apply to an entity, it must be identified as a physics body.
+  - In Cannon.js, this is done by applying either the `dynamic-body` or `static-body` component.
+  - In Ammo.js, a physics body each physics body needs two components: `ammo-body` (to define the phsyics properties of the body) and `ammo-shape` (to define its shape).  The `type` property on `ammo-body`is used to specify whether the body is `dynamic`, `kinematic` or `static`
+- Dynamic bodies are bodies that are under the control of the physics system (e.g. a ball in a game)
+- Static bodies are bodies that influence the movement of other bodies, but are not themselves moved by the physics system (e.g. the walls of a room)
+- Kinematic bodies are bodies that can move *and* influence the movement of dynamic bodies, but are not themselves  moved by the physics system.  Players' controllers or hands are often kinematic objects.
+  - Note that Cannon.js does not discriminate between static & kinematic bodies - they are all designated as "static", even if they can be moved.
+- Both Cannon.js and Ammo.js have function to automatically set the shape of a physics body to match the geometry of the entity.  This works a lot of the time, but in some cases, it's necessary to explicitly configure the shape using properties on the relevant components (see driver-specific documentation for details).
 
-## Components
+For more details, see detailed documentation for each driver 
 
-### `dynamic-body` and `static-body`
+- [Cannon.js](CannonDriver.md#components)
 
-The `dynamic-body` and `static-body` components may be added to any `<a-entity/>` that contains a mesh. Generally, each scene will have at least one `static-body` for the ground, and one or more `dynamic-body` instances that the player can interact with.
+- [Ammo.js](AmmoDriver.md#components)
 
-- **dynamic-body**: A freely-moving object. Dynamic bodies have mass, collide with other objects, bounce or slow during collisions, and fall if gravity is enabled.
-- **static-body**: A fixed-position or animated object. Other objects may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions.
+## Constraints and APIs
 
-| Property       | Dependencies     | Default | Description                                         |
-|----------------|------------------|---------|-----------------------------------------------------|
-| shape          | —                | `auto`  | `auto`, `box`, `cylinder`, `sphere`, `hull`, `none` |
-| mass           | `dynamic-body`   | 5       | Simulated mass of the object, > 0.                  |
-| linearDamping  | `dynamic-body`   | 0.01    | Resistance to movement.                             |
-| angularDamping | `dynamic-body`   | 0.01    | Resistance to rotation.                             |
-| sphereRadius   |  `shape:sphere`  | —       | Override default radius of bounding sphere.         |
-| cylinderAxis   | `shape:cylinder` | —       | Override default axis of bounding cylinder.         |
+More sophisticated use cases require more than just the configuration of dynamic, static and kinematic bodies.
 
-#### Body Shapes
+Both drivers also allow for the configuration of constraints
 
-Body components will attempt to find an appropriate CANNON.js shape to fit your model. When defining an object you may choose a shape or leave the default, `auto`. Select a shape carefully, as there are performance implications with different choices:
+Constraints such as hinges, springs and so on can be configured between bodies (or between specific points on the surfaces bodies), to provide more sophisticated interactions.   See driver-specific documentation for details.
 
-* **None** (`none`) – Does not add collision geometry. Use this when adding collision shapes manually, through the `shape` component or custom JavaScript.
-* **Auto** (`auto`) – Chooses automatically from the available shapes.
-* **Box** (`box`) – Great performance, compared to Hull or Trimesh shapes, and may be fitted to custom models.
-* **Cylinder** (`cylinder`) – See `box`. Adds `cylinderAxis` option.
-* **Sphere** (`sphere`) – See `box`. Adds `sphereRadius` option.
-* **Convex** (`hull`) – Wraps a model like shrink-wrap. Convex shapes are more performant and better supported than Trimesh, but may still have some performance impact when used as dynamic objects.
-* **Primitives** – Plane/Cylinder/Sphere. Used automatically with the corresponding A-Frame primitives.
-* **Trimesh** (`mesh`) – *Deprecated.* Trimeshes adapt to fit custom geometry (e.g. a `.OBJ` or `.DAE` file), but have very minimal support. Arbitrary trimesh shapes are difficult to model in any JS physics engine, will "fall through" certain other shapes, and have serious performance limitations.
+Both drivers also have APIs that offer
 
-For more details, see the CANNON.js [collision matrix](https://github.com/schteppe/cannon.js#features).
+- lifecycle events such as a body initialization, entering a sleeping vs. active state etc.
+- collision events that can be used to detect collisions between bodies
+- direct interactions with bodies, for example setting their velocity, applying forces to them etc.
 
-Example using a bounding box for a custom model:
+Specific details  vary between drivers, so you should consult driver-specific documentation for details.  Since Cannon.js is written in native Javascript, its API is generally easier to use, and problems are simpler to debug.  In comparison, making use of the Ammo.js APIs can be quite hard work (there's definitely scope to improve the available documentation and examples here!)  
 
-```html
-<!-- Box -->
-<a-entity obj-model="obj: url(...)" dynamic-body="shape: box; mass: 2"></a-entity>
+- [Cannon.js](CannonDriver.md)
 
-<!-- Cylinder -->
-<a-entity obj-model="obj: url(...)" dynamic-body="shape: cylinder; cylinderAxis: y; mass: 5"></a-entity>
-```
+- [Ammo.js](AmmoDriver.md)
 
-### `shape`
+  
 
-Compound shapes require a bit of work to set up, but allow you to use multiple primitives to define a physics shape around custom models. These will generally perform better, and behave more accurately, than `mesh` or `hull` shapes. For example, a chair might be modeled as a cylinder-shaped seat, on four long cylindrical legs.
+## Driver-specific limitations
 
-Example:
+This is a list of limitations that has been oberved with particular drivers (and also with physx).  It's intended to provide a checklist to help developers to choose between physics drivers for a particular project, so they don't pick a driver that turns out to be missing some feature that is fundamental for their application.
 
-```html
-<a-entity gltf-model="src: mug.glb"
-          body="type: dynamic; mass: 5; shape: none;"
-          shape__main="shape: cylinder;
-                       height: 0.36;
-                       radiusTop: 0.24;
-                       radiusBottom: 0.24;"
-          shape__handle="shape: box;
-                         halfExtents: 0.15 0.18 0.04;
-                         offset: 0.4 0 0;">
-</a-entity>
-```
+This list is probably incomplete, so if you find an additional significant limitation, please add it to this list.
 
-| Property    | Shapes     | Default   | Description |
-|-------------|------------|-----------|-------------|
-|shape        | —          | `box`     | `box`, `sphere`, or `cylinder` |
-|offset       | —          | `0 0 0`   | Position of shape relative to body. |
-|orientation  | —          | `0 0 0 1` | Rotation of shape relative to body. |
-|radius       | `sphere`   | `1`       | Sphere radius. |
-|halfExtents  | `box`      |  `1 1 1`  | Box half-extents. Use `0.5 0.5 0.5` for a 1x1x1 box. |
-|radiusTop    | `cylinder` | `1`       | Cylinder upper radius. |
-|radiusBottom | `cylinder` | `1`       | Cylinder lower radius. |
-|height       | `cylinder` | `1`       | Cylinder height. |
-|numSegments  | `cylinder` | `8`       | Cylinder subdivisions. |
+### Cannon.js
 
-### `constraint`
+- Can't handle collision with fast moving bodies, as it does not offer Continuous Collision Detection (CCD)
+- No support for collision filtering - all object pairs 
+- Restitution (bounciness) is a global property, rather than per-body
+- No stateful collision data - just a stream of events that starts when collision is happening, and stops when collision ends (compare Ammo, which offers distinct collide-start, collide-end events and collision state that can be queried at any time; no idea yet what PhysX offers here...)
+  - But see: https://github.com/wmurphyrd/aframe-physics-extras#collision-filter for an extension that enables this.
 
-The `constraint` component is used to bind physics bodies together using hinges, fixed distances, or fixed attachment points.
 
-Example:
 
-```html
-<a-box id="other-box" dynamic-body />
-<a-box constraint="target: #other-box;" dynamic-body />
-```
 
-| Property         | Dependencies    | Default | Description |
-| --- | --- | --- | --- |
-| type             | —               | `lock`  | Type of constraint. Options: `lock`, `distance`, `hinge`, `coneTwist`, `pointToPoint`. |
-| target           | —               | —       | Selector for a single entity to which current entity should be bound. |
-| maxForce         | —               | 1e6     | Maximum force that may be exerted to enforce this constraint. |
-| collideConnected | —               | true    | If true, connected bodies may collide with one another. |
-| wakeUpBodies     | —               | true    | If true, sleeping bodies are woken up by this constraint. |
-| distance         | `type:distance` | auto    | Distance at which bodies should be fixed. Default, or 0, for current distance. |
-| pivot            | `type: pointToPoint, coneTwist, hinge` | 0 0 0 | Offset of the hinge or point-to-point constraint, defined locally in this element's body. |
-| targetPivot      | `type: pointToPoint, coneTwist, hinge` | 0 0 0 | Offset of the hinge or point-to-point constraint, defined locally in the target's body. |
-| axis             | `type: coneTwist, hinge` | 0 0 1 | An axis that each body can rotate around, defined locally to this element's body. |
-| targetAxis       | `type: coneTwist, hinge` | 0 0 1 | An axis that each body can rotate around, defined locally to the target's body. |
+### Ammo.js
 
-### `spring`
+- No support for off-center attachment of spring constraints to bodies (integration issue?)
 
-The `spring` component connects two bodies, and applies forces as the bodies become farther apart.
+- No support for slider constraint (slider constraint is like a bead on an abacus) (integration issue?) 
 
-Example:
+  
 
-```html
-<a-box id="anchor" position="0 2 -3" static-body></a-box>
-<a-box position="0 1 -3"
-       dynamic-body
-       spring="target: #anchor;
-               damping: 0.25;
-               stiffness: 25;"></a-box>
-```
+### phsyx
 
-| Property     | Default | Description |
-| ------------ | --- | -------------------------------------------------------------- |
-| target       | —   | Target (other) body for the constraint.                        |
-| restLength   | 1   | Length of the spring, when no force acts upon it.              |
-| stiffness    | 100 | How much will the spring suppress force.                       |
-| damping      | 1   | Stretch factor of the spring.                                  |
-| localAnchorA | —   | Where to hook the spring to body A, in local body coordinates. |
-| localAnchorB | —   | Where to hook the spring to body B, in local body coordinates. |
+- Very few examples - a gap that needs filling!
+- Other limitations not known - suspect few limitations in the engine itself, but potentially many in terms of integration.
 
-## Using the CANNON.js API
 
-For more advanced physics, use the CANNON.js API with custom JavaScript and A-Frame components. The [CANNON.js documentation](http://schteppe.github.io/cannon.js/docs/) and source code offer good resources for learning to work with physics in JavaScript.
-
-In A-Frame, each entity's `CANNON.Body` instance is exposed on the `el.body` property. To apply a quick push to an object, you might do the following:
-
-```html
-<a-scene>
-  <a-entity id="nyan" dynamic-body="shape: hull" obj-model="obj: url(nyan-cat.obj)"></a-entity>
-  <a-plane static-body></a-plane>
-</a-scene>
-```
-
-```javascript
-var el = sceneEl.querySelector('#nyan');
-el.body.applyImpulse(
-  /* impulse */        new CANNON.Vec3(0, 1, -1),
-  /* world position */ new CANNON.Vec3().copy(el.getComputedAttribute('position'))
-);
-```
-
-## Events
-
-| event | description |
-|-------|-------------|
-| `body-loaded` | Fired when physics body (`el.body`) has been created. |
-| `collide` | Fired when two objects collide. Touching objects may fire `collide` events frequently. Unavailable with `driver: worker`. |
-
-### Collisions
-
-> **NOTE:** Collision events are currently only supported with the local driver, and will not be fired with `physics="driver: worker"` enabled.
-
-CANNON.js generates events when a collision is detected, which are propagated onto the associated A-Frame entity. Example:
-
-```javascript
-var playerEl = document.querySelector('[camera]');
-playerEl.addEventListener('collide', function (e) {
-  console.log('Player has collided with body #' + e.detail.body.id);
-
-  e.detail.target.el;  // Original entity (playerEl).
-  e.detail.body.el;    // Other entity, which playerEl touched.
-  e.detail.contact;    // Stats about the collision (CANNON.ContactEquation).
-  e.detail.contact.ni; // Normal (direction) of the collision (CANNON.Vec3).
-});
-```
-
-Note that CANNON.js cannot perfectly detect collisions with very fast-moving bodies. Doing so requires Continuous Collision Detection, which can be both slow and difficult to implement. If this is an issue for your scene, consider (1) slowing objects down, (2) detecting collisions manually (collisions with the floor are easy – `position.y - height / 2 <= 0`), or (3) attempting a PR to CANNON.js. See: [Collision with fast bodies](https://github.com/schteppe/cannon.js/issues/202).
-
-## System Configuration
-
-Contact materials define what happens when two objects meet, including physical properties such as friction and restitution (bounciness). The default, scene-wide contact materials may be configured on the scene element:
-
-```html
-<a-scene physics="friction: 0.1; restitution: 0.5">
-  <!-- ... -->
-</a-scene>
-```
-> NOTE: It is possible to run physics on a Web Worker using the `physics="driver: worker"` option.
-> Using a worker is helpful for maintaining a smooth framerate, because physics simulation does
-> not block the main thread. However, scenes needing highly-responsive interaction (for example,
-> tossing and catching objects) may prefer to run physics locally, where feedback from the physics
-> system will be immediate.
-
-| Property                        | Default | Description                                        |
-|---------------------------------|---------|----------------------------------------------------|
-| debug                           | true    | Whether to show wireframes for debugging.          |
-| gravity                         | -9.8    | Force of gravity (in m/s^2).                       |
-| iterations                      | 10      | The number of solver iterations determines quality of the constraints in the world. The more iterations, the more correct simulation. More iterations need more computations though. If you have a large gravity force in your world, you will need more iterations. |
-| maxInterval                     | 0.0667  | Maximum simulated time (in milliseconds) that may be taken by the physics engine per frame. Effectively prevents weird "jumps" when the player returns to the scene after a few minutes, at the expense of pausing physics during this time. |
-| friction                        | 0.01    | Coefficient of friction.                           |
-| restitution                     | 0.3     | Coefficient of restitution (bounciness).           |
-| contactEquationStiffness        | 1e8     | Stiffness of the produced contact equations.       |
-| contactEquationRelaxation       | 3       | Relaxation time of the produced contact equations. |
-| frictionEquationStiffness       | 1e8     | Stiffness of the produced friction equations.      |
-| frictionEquationRegularization  | 3       | Relaxation time of the produced friction equations |
-| driver                          | local   | [`local`, `worker`]                                |
-| workerFps                       | 60      | Steps per second to be used in physics simulation on worker. |
-| workerInterpolate               | true    | Whether the main thread should interpolate physics frames from the worker. |
-| workerInterpBufferSize          | 2       | Number of physics frames to be 'padded' before displaying. Advanced. |
-| workerDebug                     | false   | If true, the worker codepaths are used on the main thread. This is slow, because physics snapshots are needlessly serialized, but helpful for debugging. |
-
-More advanced configuration, including specifying different collision behaviors for different objects, is available through the CANNON.js JavaScript API.
-
-Resources:
-
-* [CANNON.World](http://schteppe.github.io/cannon.js/docs/classes/World.html)
-* [CANNON.ContactMaterial](http://schteppe.github.io/cannon.js/docs/classes/ContactMaterial.html)
 
 ## Examples
 
-To help demonstrate the features and capabilities of `aframe-physics-system` a
-collection of examples have been prepared. Please see
-[examples](https://c-frame.github.io/aframe-physics-system/examples/) for a summary and link to each of the
-prepared examples.
+To help demonstrate the features and capabilities of `aframe-physics-system` a collection of examples have been prepared. Please see [examples](https://c-frame.github.io/aframe-physics-system/examples/) for a summary and link to each of the prepared examples.			
