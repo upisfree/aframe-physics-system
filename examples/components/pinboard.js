@@ -2,7 +2,7 @@
 AFRAME.registerComponent('pinboard', {
 
   schema: {
-      physics: {type: 'string'}, // physx or ammo.
+      physics: {type: 'string'}, // physx , ammo or cannon
       width: {type: 'number', default: 10},
       height: {type: 'number', default: 10},
   },
@@ -22,6 +22,9 @@ AFRAME.registerComponent('pinboard', {
           if (this.data.physics === "ammo") {
               box.setAttribute('ammo-body', 'type:static')
               box.setAttribute('ammo-shape', 'type:box;fit:all')
+          }
+          else if (this.data.physics === "cannon") {
+              box.setAttribute('static-body', '')
           }
           else {
               box.setAttribute('physx-body', 'type:static')
@@ -67,7 +70,13 @@ AFRAME.registerComponent('dynamic-ball', {
       if (this.data.physics === "ammo") {
           el.setAttribute('ammo-body', 'type:dynamic')
           el.setAttribute('ammo-shape', 'type:sphere; fit:all')
-          
+      }
+      else if (this.data.physics === "cannon") {
+          // necessary to explicitly specify sphere radius, as async call to 
+          // set radius attribute on el may not have completed yet, and Cannon uses
+          // the default radius of 1.
+          // This is seen when recycling balls (deleting and recreating them).
+          el.setAttribute('dynamic-body', 'shape: sphere; sphereRadius: 0.3')
       }
       else {
           el.setAttribute('physx-body', 'type:dynamic')
@@ -86,7 +95,7 @@ AFRAME.registerComponent('dynamic-ball', {
 AFRAME.registerComponent('ball-recycler', {
 
   schema: {
-      physics: {type: 'string'}, // physx or ammo.
+      physics: {type: 'string'}, // physx, ammo or cannon.
       ballCount: {type: 'number', default: 10},
       width: {type: 'number', default: 8}, // width of spawn field
       depth: {type: 'number', default: 8}, // depth of spawn field (after initial spawn balls always spawned at far depth)
@@ -127,8 +136,8 @@ AFRAME.registerComponent('ball-recycler', {
       const ball = evt.target
 
       ball.parentNode.removeChild(ball);
-
       this.createBall(true)
+
   }
 })
 
