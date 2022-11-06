@@ -59,6 +59,7 @@ module.exports = AFRAME.registerSystem('physics', {
     // Data used for performance monitoring.
     this.cumTimeEngine = 0;
     this.cumTimeWrapper = 0;
+    this.tickCounter = 0;
 
     this.callbacks = {beforeStep: [], step: [], afterStep: []};
 
