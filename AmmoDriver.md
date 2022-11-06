@@ -333,12 +333,13 @@ The current map of collisions can be accessed via `AFRAME.scenes[0].systems.phys
 
 ## System Configuration
 
-| Property      | Default   | Description                                                                                                                                 |
-| ------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| driver        | `local`   | [`local`, `worker`, `ammo`]                                                                                                                 |
-| debug         | `true`    | Whether to show wireframes for debugging.                                                                                                   |
+| Property      | Default   | Description                                                  |
+| ------------- | --------- | ------------------------------------------------------------ |
+| driver        | `local`   | [`local`, `worker`, `ammo`]                                  |
+| debug         | `true`    | Whether to show wireframes for debugging.                    |
 | debugDrawMode | `0`       | See [AmmoDebugDrawer](https://github.com/InfiniteLee/ammo-debug-drawer/blob/0b2c323ef65b4fd414235b6a5e705cfc1201c765/AmmoDebugDrawer.js#L3) |
-| gravity       | `-9.8`    | Force of gravity (in m/s^2).                                                                                                                |
-| iterations    | `10`      | The number of solver iterations determines quality of the constraints in the world.                                                         |
-| maxSubSteps   | `4`       | The max number of physics steps to calculate per tick.                                                                                      |
-| fixedTimeStep | `0.01667` | The internal framerate of the physics simulation.                                                                                           |
+| gravity       | `-9.8`    | Force of gravity (in m/s^2).                                 |
+| iterations    | `10`      | The number of solver iterations determines quality of the constraints in the world. |
+| maxSubSteps   | `4`       | The max number of physics steps to calculate per tick.       |
+| fixedTimeStep | `0.01667` | The internal framerate of the physics simulation.            |
+| stats         |           | Where to output performance stats (if any), `console`, `events` (or both).  Configuring `events` generates an event `physics-tick-timer` every 100 frames, with average msecs per tick spent in the engine, wrapper and the two combined (total). |

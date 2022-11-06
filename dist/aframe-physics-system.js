@@ -18302,7 +18302,9 @@ module.exports = AFRAME.registerSystem('physics', {
     // If using ammo, set the max number of steps per frame 
     maxSubSteps: { default: 4 },
     // If using ammo, set the framerate of the simulation
-    fixedTimeStep: { default: 1 / 60 }
+    fixedTimeStep: { default: 1 / 60 },
+    // Whether to output stats, and how to output them.  One or more of "console", "events"
+    stats: {type: 'array', default: []}
   },
 
   /**
@@ -18315,9 +18317,14 @@ module.exports = AFRAME.registerSystem('physics', {
     this.debug = data.debug;
 
     // Data used for performance monitoring.
-    this.cumTimeEngine = 0;
-    this.cumTimeWrapper = 0;
-    this.tickCounter = 0;
+    this.statsToConsole = this.data.stats.includes("console")
+    this.statsToEvents = this.data.stats.includes("events")
+    if (this.statsToConsole || this.statsToEvents) {
+      this.trackPerf = true;
+      this.cumTimeEngine = 0;
+      this.cumTimeWrapper = 0;
+      this.tickCounter = 0;
+    }
 
     this.callbacks = {beforeStep: [], step: [], afterStep: []};
 
@@ -18430,20 +18437,32 @@ module.exports = AFRAME.registerSystem('physics', {
       callbacks.afterStep[i].afterStep(t, dt);
     }
 
-    const wrapperEndTime = Date.now();
-    this.cumTimeWrapper += wrapperEndTime;
-    this.cumTimeWrapper -= wrapperStartTime;
-    this.cumTimeWrapper -= engineEndTime;
-    this.cumTimeWrapper += engineStartTime;
+    if (this.trackPerf) {
+      const wrapperEndTime = Date.now();
+      this.cumTimeWrapper += wrapperEndTime;
+      this.cumTimeWrapper -= wrapperStartTime;
+      this.cumTimeWrapper -= engineEndTime;
+      this.cumTimeWrapper += engineStartTime;
 
-    if (this.tickCounter === 100) {
-      console.log(`Avg. physics tick duration (engine): ${this.cumTimeEngine / 100} msecs`);
-      console.log(`Avg. physics tick duration (wrapper): ${this.cumTimeWrapper / 100} msecs`);
-      this.el.emit("physics-tick-timer", {engine: this.cumTimeEngine / 100,
-                                          wrapper: this.cumTimeWrapper / 100})
-      this.tickCounter = 0;
-      this.cumTimeEngine = 0;
-      this.cumTimeWrapper = 0;
+      if (this.tickCounter === 100) {
+        if (this.statsToConsole) {
+          console.log(`Avg. physics tick duration (engine): ${this.cumTimeEngine / 100} msecs`);
+          console.log(`Avg. physics tick duration (wrapper): ${this.cumTimeWrapper / 100} msecs`);
+        }
+
+        if (this.statsToEvents) {
+          const engine = this.cumTimeEngine / 100
+          const wrapper = this.cumTimeWrapper / 100
+          const total = engine + wrapper
+          this.el.emit("physics-tick-timer", {engine: engine.toFixed(2),
+                                              wrapper: wrapper.toFixed(2), 
+                                              total: total.toFixed(2) })
+        }
+        
+        this.tickCounter = 0;
+        this.cumTimeEngine = 0;
+        this.cumTimeWrapper = 0;
+      }
     }
   },
 
