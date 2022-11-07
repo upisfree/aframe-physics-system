@@ -165,11 +165,14 @@ module.exports = AFRAME.registerSystem('physics', {
     const engineStartTime = Date.now();
 
     this.driver.step(Math.min(dt / 1000, this.data.maxInterval));
-
+    
     const engineEndTime = Date.now();
-    this.cumulativeTimeEngine += engineEndTime;
-    this.cumulativeTimeEngine -= engineStartTime;
-    this.tickCounter++;
+
+    if (this.trackPerf) {
+      this.cumulativeTimeEngine += engineEndTime;
+      this.cumulativeTimeEngine -= engineStartTime;
+      this.tickCounter++;
+    }
     
     for (i = 0; i < callbacks.step.length; i++) {
       callbacks.step[i].step(t, dt);
