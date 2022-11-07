@@ -18321,8 +18321,8 @@ module.exports = AFRAME.registerSystem('physics', {
     this.statsToEvents = this.data.stats.includes("events")
     if (this.statsToConsole || this.statsToEvents) {
       this.trackPerf = true;
-      this.cumTimeEngine = 0;
-      this.cumTimeWrapper = 0;
+      this.cumulativeTimeEngine = 0;
+      this.cumulativeTimeWrapper = 0;
       this.tickCounter = 0;
     }
 
@@ -18425,8 +18425,8 @@ module.exports = AFRAME.registerSystem('physics', {
     this.driver.step(Math.min(dt / 1000, this.data.maxInterval));
 
     const engineEndTime = Date.now();
-    this.cumTimeEngine += engineEndTime;
-    this.cumTimeEngine -= engineStartTime;
+    this.cumulativeTimeEngine += engineEndTime;
+    this.cumulativeTimeEngine -= engineStartTime;
     this.tickCounter++;
     
     for (i = 0; i < callbacks.step.length; i++) {
@@ -18439,20 +18439,20 @@ module.exports = AFRAME.registerSystem('physics', {
 
     if (this.trackPerf) {
       const wrapperEndTime = Date.now();
-      this.cumTimeWrapper += wrapperEndTime;
-      this.cumTimeWrapper -= wrapperStartTime;
-      this.cumTimeWrapper -= engineEndTime;
-      this.cumTimeWrapper += engineStartTime;
+      this.cumulativeTimeWrapper += wrapperEndTime;
+      this.cumulativeTimeWrapper -= wrapperStartTime;
+      this.cumulativeTimeWrapper -= engineEndTime;
+      this.cumulativeTimeWrapper += engineStartTime;
 
       if (this.tickCounter === 100) {
         if (this.statsToConsole) {
-          console.log(`Avg. physics tick duration (engine): ${this.cumTimeEngine / 100} msecs`);
-          console.log(`Avg. physics tick duration (wrapper): ${this.cumTimeWrapper / 100} msecs`);
+          console.log(`Avg. physics tick duration (engine): ${this.cumulativeTimeEngine / 100} msecs`);
+          console.log(`Avg. physics tick duration (wrapper): ${this.cumulativeTimeWrapper / 100} msecs`);
         }
 
         if (this.statsToEvents) {
-          const engine = this.cumTimeEngine / 100
-          const wrapper = this.cumTimeWrapper / 100
+          const engine = this.cumulativeTimeEngine / 100
+          const wrapper = this.cumulativeTimeWrapper / 100
           const total = engine + wrapper
           this.el.emit("physics-tick-timer", {engine: engine.toFixed(2),
                                               wrapper: wrapper.toFixed(2), 
@@ -18460,8 +18460,8 @@ module.exports = AFRAME.registerSystem('physics', {
         }
         
         this.tickCounter = 0;
-        this.cumTimeEngine = 0;
-        this.cumTimeWrapper = 0;
+        this.cumulativeTimeEngine = 0;
+        this.cumulativeTimeWrapper = 0;
       }
     }
   },
