@@ -64,7 +64,8 @@ module.exports = AFRAME.registerSystem('physics', {
     if (this.statsToConsole || this.statsToEvents) {
       this.trackPerf = true;
       this.cumulativeTimeEngine = 0;
-      this.cumulativeTimeWrapper = 0;
+      this.cumulativeTimeBefore = 0;
+      this.cumulativeTimeAfter = 0;
       this.tickCounter = 0;
     }
 
@@ -153,7 +154,7 @@ module.exports = AFRAME.registerSystem('physics', {
   tick: function (t, dt) {
     if (!this.initialized || !dt) return;
 
-    const wrapperStartTime = Date.now();
+    const beforeStartTime = Date.now();
 
     var i;
     var callbacks = this.callbacks;
@@ -165,7 +166,7 @@ module.exports = AFRAME.registerSystem('physics', {
     const engineStartTime = Date.now();
 
     this.driver.step(Math.min(dt / 1000, this.data.maxInterval));
-    
+
     const engineEndTime = Date.now();
 
     if (this.trackPerf) {
@@ -183,30 +184,38 @@ module.exports = AFRAME.registerSystem('physics', {
     }
 
     if (this.trackPerf) {
-      const wrapperEndTime = Date.now();
-      this.cumulativeTimeWrapper += wrapperEndTime;
-      this.cumulativeTimeWrapper -= wrapperStartTime;
-      this.cumulativeTimeWrapper -= engineEndTime;
-      this.cumulativeTimeWrapper += engineStartTime;
+      const afterEndTime = Date.now();
+      this.cumulativeTimeBefore += engineStartTime;
+      this.cumulativeTimeBefore -= beforeStartTime;
+      this.cumulativeTimeAfter += afterEndTime;
+      this.cumulativeTimeAfter -= engineEndTime;
 
       if (this.tickCounter === 100) {
+
+        const engine = this.cumulativeTimeEngine / 100
+        const before = this.cumulativeTimeBefore / 100
+        const after = this.cumulativeTimeAfter / 100
+        const total = engine + before + after
+
         if (this.statsToConsole) {
-          console.log(`Avg. physics tick duration (engine): ${this.cumulativeTimeEngine / 100} msecs`);
-          console.log(`Avg. physics tick duration (wrapper): ${this.cumulativeTimeWrapper / 100} msecs`);
+          console.log(`Avg. physics tick duration (engine): ${engine.toFixed(2)} msecs`);
+          console.log(`Avg. physics tick duration (wrapper - before): ${before.toFixed(2)} msecs`);
+          console.log(`Avg. physics tick duration (wrapper - after): ${after.toFixed(2)} msecs`);
+          console.log(`Avg. physics tick duration (total): ${total.toFixed(2)} msecs`);
         }
 
         if (this.statsToEvents) {
-          const engine = this.cumulativeTimeEngine / 100
-          const wrapper = this.cumulativeTimeWrapper / 100
-          const total = engine + wrapper
+          
           this.el.emit("physics-tick-timer", {engine: engine.toFixed(2),
-                                              wrapper: wrapper.toFixed(2), 
+                                              before: before.toFixed(2), 
+                                              after: after.toFixed(2), 
                                               total: total.toFixed(2) })
         }
         
         this.tickCounter = 0;
         this.cumulativeTimeEngine = 0;
-        this.cumulativeTimeWrapper = 0;
+        this.cumulativeTimeBefore = 0;
+        this.cumulativeTimeAfter = 0;
       }
     }
   },
