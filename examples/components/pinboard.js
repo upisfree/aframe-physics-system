@@ -159,18 +159,19 @@ AFRAME.registerComponent('tick-time-display', {
   updateData(evt) {
 
     if (this.data.outputEl) {
-      this.data.outputEl.innerHTML = `Engine: ${evt.detail.engine}<br/>
-                                      Before: ${evt.detail.before}<br/>
-                                      After: ${evt.detail.after}<br/>
-                                      Total: ${evt.detail.total}`
+      this.data.outputEl.innerHTML = `Engine: ${evt.detail.engine.avg}<br/>
+                                      Before: ${evt.detail.before.avg}<br/>
+                                      After: ${evt.detail.after.avg}<br/>
+                                      Total: ${evt.detail.total.avg}`
     }
      
    if (this.data.sceneOutputEl) {
-     this.data.sceneOutputEl.setAttribute("text", `value: Average tick (msecs)
-                                                          Engine: ${evt.detail.engine}
-                                                          Before: ${evt.detail.before}
-                                                          After:  ${evt.detail.after}
-                                                          Total:  ${evt.detail.total}`)
+     const d = evt.detail
+     this.data.sceneOutputEl.setAttribute("text", `value: Tick (msecs)\tAve    \tMax    \tMin
+        Engine:  \t${d.engine.avg.padStart(7, ' ')}\t${d.engine.max.padStart(7, ' ')}\t${d.engine.min.padStart(7, ' ')}
+        Before:  \t${d.before.avg.padStart(7, ' ')}\t${d.before.max.padStart(7, ' ')}\t${d.before.min.padStart(7, ' ')}
+        After:   \t${d.after.avg.padStart(7, ' ')}\t${d.after.max.padStart(7, ' ')}\t${d.after.min.padStart(7, ' ')}
+        Total:   \t${d.total.avg.padStart(7, ' ')}\t${d.total.max.padStart(7, ' ')}\t${d.total.min.padStart(7, ' ')}`)
    }
   }
 })

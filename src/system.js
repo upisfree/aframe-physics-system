@@ -63,9 +63,10 @@ module.exports = AFRAME.registerSystem('physics', {
     this.statsToEvents = this.data.stats.includes("events")
     if (this.statsToConsole || this.statsToEvents) {
       this.trackPerf = true;
-      this.cumulativeTimeEngine = 0;
-      this.cumulativeTimeBefore = 0;
-      this.cumulativeTimeAfter = 0;
+      this.engine = new StatTracker(100);
+      this.before = new StatTracker(100);
+      this.after = new StatTracker(100);
+      this.total = new StatTracker(100);
       this.tickCounter = 0;
     }
 
@@ -169,12 +170,6 @@ module.exports = AFRAME.registerSystem('physics', {
 
     const engineEndTime = Date.now();
 
-    if (this.trackPerf) {
-      this.cumulativeTimeEngine += engineEndTime;
-      this.cumulativeTimeEngine -= engineStartTime;
-      this.tickCounter++;
-    }
-    
     for (i = 0; i < callbacks.step.length; i++) {
       callbacks.step[i].step(t, dt);
     }
@@ -185,37 +180,34 @@ module.exports = AFRAME.registerSystem('physics', {
 
     if (this.trackPerf) {
       const afterEndTime = Date.now();
-      this.cumulativeTimeBefore += engineStartTime;
-      this.cumulativeTimeBefore -= beforeStartTime;
-      this.cumulativeTimeAfter += afterEndTime;
-      this.cumulativeTimeAfter -= engineEndTime;
+
+      this.before.record(engineStartTime - beforeStartTime)
+      this.engine.record(engineEndTime - engineStartTime)
+      this.after.record(afterEndTime - engineEndTime)
+      this.total.record(afterEndTime - beforeStartTime)
+
+      this.tickCounter++;
 
       if (this.tickCounter === 100) {
 
-        const engine = this.cumulativeTimeEngine / 100
-        const before = this.cumulativeTimeBefore / 100
-        const after = this.cumulativeTimeAfter / 100
-        const total = engine + before + after
+        const statsData = {engine: this.engine.report,
+                           before: this.before.report, 
+                           after: this.after.report,
+                           total: this.total.report}
 
         if (this.statsToConsole) {
-          console.log(`Avg. physics tick duration (engine): ${engine.toFixed(2)} msecs`);
-          console.log(`Avg. physics tick duration (wrapper - before): ${before.toFixed(2)} msecs`);
-          console.log(`Avg. physics tick duration (wrapper - after): ${after.toFixed(2)} msecs`);
-          console.log(`Avg. physics tick duration (total): ${total.toFixed(2)} msecs`);
+          console.log("Physics tick stats:", statsData)
         }
 
         if (this.statsToEvents) {
-          
-          this.el.emit("physics-tick-timer", {engine: engine.toFixed(2),
-                                              before: before.toFixed(2), 
-                                              after: after.toFixed(2), 
-                                              total: total.toFixed(2) })
+          this.el.emit("physics-tick-timer", statsData)
         }
-        
+
+        this.before.reset()
+        this.engine.reset()
+        this.after.reset()
+        this.total.reset()
         this.tickCounter = 0;
-        this.cumulativeTimeEngine = 0;
-        this.cumulativeTimeBefore = 0;
-        this.cumulativeTimeAfter = 0;
       }
     }
   },
@@ -333,3 +325,41 @@ module.exports = AFRAME.registerSystem('physics', {
     return this.driver.getMaterial(name);
   }
 });
+
+class StatTracker {
+  constructor(cycles = 100, dps = 2) {
+    this.cycles = cycles
+    this.dps = dps
+    this.reset()
+  }
+
+  reset() {
+    this.max = 0
+    this.min = Infinity
+    this.cumulative = 0
+    this.counter = 0
+  }
+
+  record(value) {
+    this.cumulative += value
+    if (value > this.max) {
+      this.max = value
+    }
+    if (value < this.min) {
+      this.min = value
+    }
+    this.counter++
+  }
+
+  get avg() {
+    // Average will only be valid if we have recorded the correct number of cycles.
+    console.assert(this.counter === this.cycles)
+    return this.cumulative / this.cycles
+  }
+
+  get report() {
+    return { avg: this.avg.toFixed(this.dps),
+             max: this.max.toFixed(this.dps),
+             min: this.min.toFixed(this.dps) }
+  }
+}
