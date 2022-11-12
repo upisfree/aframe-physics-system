@@ -66,6 +66,7 @@ module.exports = AFRAME.registerSystem('physics', {
       this.cumulativeTimeEngine = 0;
       this.cumulativeTimeWrapper = 0;
       this.tickCounter = 0;
+      this.timerEventDetails = {}
     }
 
     this.callbacks = {beforeStep: [], step: [], afterStep: []};
@@ -199,9 +200,10 @@ module.exports = AFRAME.registerSystem('physics', {
           const engine = this.cumulativeTimeEngine / 100
           const wrapper = this.cumulativeTimeWrapper / 100
           const total = engine + wrapper
-          this.el.emit("physics-tick-timer", {engine: engine.toFixed(2),
-                                              wrapper: wrapper.toFixed(2), 
-                                              total: total.toFixed(2) })
+          this.timerEventDetails.engine = engine.toFixed(2)
+          this.timerEventDetails.wrapper = wrapper.toFixed(2)
+          this.timerEventDetails.total = total.toFixed(2)
+          this.el.emit("physics-tick-timer", this.timerEventDetails)
         }
         
         this.tickCounter = 0;
