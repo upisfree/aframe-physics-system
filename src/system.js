@@ -154,7 +154,7 @@ module.exports = AFRAME.registerSystem('physics', {
   tick: function (t, dt) {
     if (!this.initialized || !dt) return;
 
-    const wrapperStartTime = Date.now();
+    const wrapperStartTime = performance.now();
 
     var i;
     var callbacks = this.callbacks;
@@ -163,11 +163,11 @@ module.exports = AFRAME.registerSystem('physics', {
       this.callbacks.beforeStep[i].beforeStep(t, dt);
     }
 
-    const engineStartTime = Date.now();
+    const engineStartTime = performance.now();
 
     this.driver.step(Math.min(dt / 1000, this.data.maxInterval));
     
-    const engineEndTime = Date.now();
+    const engineEndTime = performance.now();
 
     if (this.trackPerf) {
       this.cumulativeTimeEngine += engineEndTime;
@@ -184,7 +184,7 @@ module.exports = AFRAME.registerSystem('physics', {
     }
 
     if (this.trackPerf) {
-      const wrapperEndTime = Date.now();
+      const wrapperEndTime = performance.now();
       this.cumulativeTimeWrapper += wrapperEndTime;
       this.cumulativeTimeWrapper -= wrapperStartTime;
       this.cumulativeTimeWrapper -= engineEndTime;
