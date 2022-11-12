@@ -197,11 +197,11 @@ module.exports = AFRAME.registerSystem('physics', {
         this.statsData.total = this.total.report;
 
         if (this.statsToConsole) {
-          console.log("Physics tick stats:", statsData)
+          console.log("Physics tick stats:", this.statsData)
         }
 
         if (this.statsToEvents) {
-          this.el.emit("physics-tick-timer", statsData)
+          this.el.emit("physics-tick-timer", this.statsData)
         }
 
         this.before.reset()

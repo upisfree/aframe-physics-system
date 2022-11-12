@@ -18326,6 +18326,7 @@ module.exports = AFRAME.registerSystem('physics', {
       this.after = new StatTracker(100);
       this.total = new StatTracker(100);
       this.tickCounter = 0;
+      this.statsData = {};
     }
 
     this.callbacks = {beforeStep: [], step: [], afterStep: []};
@@ -18413,7 +18414,7 @@ module.exports = AFRAME.registerSystem('physics', {
   tick: function (t, dt) {
     if (!this.initialized || !dt) return;
 
-    const beforeStartTime = Date.now();
+    const beforeStartTime = performance.now();
 
     var i;
     var callbacks = this.callbacks;
@@ -18422,11 +18423,11 @@ module.exports = AFRAME.registerSystem('physics', {
       this.callbacks.beforeStep[i].beforeStep(t, dt);
     }
 
-    const engineStartTime = Date.now();
+    const engineStartTime = performance.now();
 
     this.driver.step(Math.min(dt / 1000, this.data.maxInterval));
 
-    const engineEndTime = Date.now();
+    const engineEndTime = performance.now();
 
     for (i = 0; i < callbacks.step.length; i++) {
       callbacks.step[i].step(t, dt);
@@ -18437,7 +18438,7 @@ module.exports = AFRAME.registerSystem('physics', {
     }
 
     if (this.trackPerf) {
-      const afterEndTime = Date.now();
+      const afterEndTime = performance.now();
 
       this.before.record(engineStartTime - beforeStartTime)
       this.engine.record(engineEndTime - engineStartTime)
@@ -18448,17 +18449,17 @@ module.exports = AFRAME.registerSystem('physics', {
 
       if (this.tickCounter === 100) {
 
-        const statsData = {engine: this.engine.report,
-                           before: this.before.report, 
-                           after: this.after.report,
-                           total: this.total.report}
+        this.statsData.engine = this.engine.report;
+        this.statsData.before = this.before.report;
+        this.statsData.after = this.after.report;
+        this.statsData.total = this.total.report;
 
         if (this.statsToConsole) {
-          console.log("Physics tick stats:", statsData)
+          console.log("Physics tick stats:", this.statsData)
         }
 
         if (this.statsToEvents) {
-          this.el.emit("physics-tick-timer", statsData)
+          this.el.emit("physics-tick-timer", this.statsData)
         }
 
         this.before.reset()
