@@ -8,7 +8,6 @@
     <script src="https://mixedreality.mozilla.org/ammo.js/builds/ammo.wasm.js"></script>
     <script src="../../dist/aframe-physics-system.js"></script>
     <script src="../components/pinboard.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/stats-panel.min.js"></script>
     <link rel="stylesheet" href="../styles.css">
   </head>
   <body>
@@ -23,21 +22,11 @@
     <a-scene physics="driver: ammo; stats: events"
              stats
              stats-panel
-             stats-group__avg="label: Average Physics Tick Times (msecs)"
-             stats-row__1="group: avg; event:physics-tick-timer; property: total.avg; label: Total"
-             stats-row__2="group: avg; event:physics-tick-timer; property: after.avg; label: After"
-             stats-row__3="group: avg; event:physics-tick-timer; property: before.avg; label: Before"
-             stats-row__4="group: avg; event:physics-tick-timer; property: engine.avg; label: Engine"
-             stats-group__max="label: Max Physics Tick Times (msecs)"
-             stats-row__5="group: max; event:physics-tick-timer; property: total.max; label: Total"
-             stats-row__6="group: max; event:physics-tick-timer; property: after.max; label: After"
-             stats-row__7="group: max; event:physics-tick-timer; property: before.max; label: Before"
-             stats-row__8="group: max; event:physics-tick-timer; property: engine.max; label: Engine"
-             stats-group__min="label: Min Physics Tick Times (msecs)"
-             stats-row__9="group: min; event:physics-tick-timer; property: total.min; label: Total"
-             stats-row__10="group: min; event:physics-tick-timer; property: after.min; label: After"
-             stats-row__11="group: min; event:physics-tick-timer; property: before.min; label: Before"
-             stats-row__12="group: min; event:physics-tick-timer; property: engine.min; label: Engine"
+             stats-group__tick="label: Physics Ticks: Min &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Max &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Avg"
+             stats-row__1="group: tick; event:physics-tick-timer; properties: before.min, before.max, before.avg; label: Before"
+             stats-row__2="group: tick; event:physics-tick-timer; properties: after.min, after.max, after.avg; label: After"
+             stats-row__3="group: tick; event:physics-tick-timer; properties: engine.min, engine.max, engine.avg; label: Engine"
+             stats-row__4="group: tick; event:physics-tick-timer; properties: total.min, total.max, total.avg; label: Total"
              tick-time-display="sceneOutputEl: #tickTimerScene">
         <a-entity id="pinboard" pinboard="physics: ammo; height:20; width: 20" position = "0 0 -20" rotation = "45 0 0">
         </a-entity>

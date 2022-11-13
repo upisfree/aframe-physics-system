@@ -8,6 +8,7 @@ var LocalDriver = require('./drivers/local-driver'),
     WorkerDriver = require('./drivers/worker-driver'),
     NetworkDriver = require('./drivers/network-driver'),
     AmmoDriver = require('./drivers/ammo-driver');
+    require('aframe-stats-panel')
 
 /**
  * Physics system.

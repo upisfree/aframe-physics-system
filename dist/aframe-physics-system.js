@@ -22,7 +22,7 @@ module.exports = {
 // Export CANNON.js.
 window.CANNON = window.CANNON || CANNON;
 
-},{"./src/components/ammo-constraint":8,"./src/components/body/ammo-body":9,"./src/components/body/body":10,"./src/components/body/dynamic-body":11,"./src/components/body/static-body":12,"./src/components/constraint":13,"./src/components/math":14,"./src/components/shape/ammo-shape":16,"./src/components/shape/shape":17,"./src/components/spring":18,"./src/system":28,"cannon-es":4}],2:[function(require,module,exports){
+},{"./src/components/ammo-constraint":9,"./src/components/body/ammo-body":10,"./src/components/body/body":11,"./src/components/body/dynamic-body":12,"./src/components/body/static-body":13,"./src/components/constraint":14,"./src/components/math":15,"./src/components/shape/ammo-shape":17,"./src/components/shape/shape":18,"./src/components/spring":19,"./src/system":29,"cannon-es":5}],2:[function(require,module,exports){
 /**
  * CANNON.shape2mesh
  *
@@ -193,7 +193,153 @@ CANNON.shape2mesh = function(body){
 
 module.exports = CANNON.shape2mesh;
 
-},{"cannon-es":4}],3:[function(require,module,exports){
+},{"cannon-es":5}],3:[function(require,module,exports){
+AFRAME.registerComponent('stats-panel', {
+  schema: {
+    merge: {type: 'boolean', default: true}
+  },
+
+  init() {
+
+    const container = document.querySelector('.rs-container')
+
+    if (container && this.data.merge) {
+      //stats panel exists, just merge into it.
+      this.container = container
+      return;
+    }
+
+    // if stats panel doesn't exist, add one to support our custom stats.
+    this.base = document.createElement('div')
+    this.base.classList.add('rs-base')
+    const body = document.body || document.getElementsByTagName('body')[0]
+
+    if (container && !this.data.merge) {
+      this.base.style.top = "auto"
+      this.base.style.bottom = "20px"
+    }
+
+    body.appendChild(this.base)
+
+    this.container = document.createElement('div')
+    this.container.classList.add('rs-container')
+    this.base.appendChild(this.container)
+  }
+});
+
+AFRAME.registerComponent('stats-group', {
+  multiple: true,
+  schema: {
+    label: {type: 'string'}
+  },
+
+  init() {
+
+    let container
+    const baseComponent = this.el.components['stats-panel']
+    if (baseComponent) {
+      container = baseComponent.container
+    }
+    else {
+      container = document.querySelector('.rs-container')
+    }
+
+    if (!container) {
+      console.warn(`Couldn't find stats container to add stats to.
+                    Add either stats or stats-panel component to a-scene`)
+      return;
+    }
+    
+    this.groupHeader = document.createElement('h1')
+    this.groupHeader.innerHTML = this.data.label
+    container.appendChild(this.groupHeader)
+
+    this.group = document.createElement('div')
+    this.group.classList.add('rs-group')
+    // rs-group hs style flex-direction of 'column-reverse'
+    // No idea why it's like that, but it's not what we want for our stats.
+    // We prefer them rendered in the order speified.
+    // So override this style.
+    this.group.style.flexDirection = 'column'
+    this.group.style.webKitFlexDirection = 'column'
+    container.appendChild(this.group)
+  }
+});
+
+AFRAME.registerComponent('stats-row', {
+  multiple: true,
+  schema: {
+    // name of the group to add the stats row to.
+    group: {type: 'string'},
+
+    // name of an event to listen for
+    event: {type: 'string'},
+
+    // property from event to output in stats panel
+    properties: {type: 'array'},
+
+    // label for the row in the stats panel
+    label: {type: 'string'}
+  },
+
+  init () {
+
+    const groupComponentName = "stats-group__" + this.data.group
+    const groupComponent = this.el.components[groupComponentName] ||
+                           this.el.sceneEl.components[groupComponentName] ||
+                           this.el.components["stats-group"] ||
+                           this.el.sceneEl.components["stats-group"]
+
+    if (!groupComponent) {
+      console.warn(`Couldn't find stats group ${groupComponentName}`)
+      return;
+    }
+  
+    this.counter = document.createElement('div')
+    this.counter.classList.add('rs-counter-base')
+    groupComponent.group.appendChild(this.counter)
+
+    this.counterId = document.createElement('div')
+    this.counterId.classList.add('rs-counter-id')
+    this.counterId.innerHTML = this.data.label
+    this.counter.appendChild(this.counterId)
+
+    this.counterValues = {}
+    this.data.properties.forEach((property) => {
+      const counterValue = document.createElement('div')
+      counterValue.classList.add('rs-counter-value')
+      counterValue.innerHTML = "..."
+      this.counter.appendChild(counterValue)
+      this.counterValues[property] = counterValue
+    })
+
+    this.updateData = this.updateData.bind(this)
+    this.el.addEventListener(this.data.event, this.updateData)
+
+    this.splitCache = {}
+  },
+
+  updateData(e) {
+    
+    this.data.properties.forEach((property) => {
+      const split = this.splitDot(property);
+      let value = e.detail;
+      for (i = 0; i < split.length; i++) {
+        value = value[split[i]];
+      }
+      this.counterValues[property].innerHTML = value
+    })
+  },
+
+  splitDot (path) {
+    if (path in this.splitCache) { return this.splitCache[path]; }
+    this.splitCache[path] = path.split('.');
+    return this.splitCache[path];
+  }
+
+});
+
+},{}],4:[function(require,module,exports){
 /* global Ammo,THREE */
 
 THREE.AmmoDebugConstants = {
@@ -359,7 +505,7 @@ THREE.AmmoDebugDrawer.prototype.getDebugMode = function() {
   return this.debugDrawMode;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -13576,7 +13722,7 @@ exports.Vec3 = Vec3;
 exports.Vec3Pool = Vec3Pool;
 exports.World = World;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 /* global Ammo,THREE */
 
@@ -14337,7 +14483,7 @@ const _computeBounds = (function() {
   };
 })();
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (global){
 var cannonEs = require('cannon-es');
 var three = (typeof window !== "undefined" ? window['THREE'] : typeof global !== "undefined" ? global['THREE'] : null);
@@ -15666,7 +15812,7 @@ exports.threeToCannon = threeToCannon;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"cannon-es":4}],7:[function(require,module,exports){
+},{"cannon-es":5}],8:[function(require,module,exports){
 var bundleFn = arguments[3];
 var sources = arguments[4];
 var cache = arguments[5];
@@ -15749,7 +15895,7 @@ module.exports = function (fn, options) {
     return worker;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /* global Ammo */
 const CONSTRAINT = require("../constants").CONSTRAINT;
 
@@ -15925,7 +16071,7 @@ module.exports = AFRAME.registerComponent("ammo-constraint", {
   }
 });
 
-},{"../constants":19}],9:[function(require,module,exports){
+},{"../constants":20}],10:[function(require,module,exports){
 /* global Ammo,THREE */
 const AmmoDebugDrawer = require("ammo-debug-drawer");
 const threeToAmmo = require("three-to-ammo");
@@ -16448,7 +16594,7 @@ let AmmoBody = {
 module.exports.definition = AmmoBody;
 module.exports.Component = AFRAME.registerComponent("ammo-body", AmmoBody);
 
-},{"../../constants":19,"ammo-debug-drawer":3,"three-to-ammo":5}],10:[function(require,module,exports){
+},{"../../constants":20,"ammo-debug-drawer":4,"three-to-ammo":6}],11:[function(require,module,exports){
 var CANNON = require('cannon-es');
 const { threeToCannon, ShapeType } = require('three-to-cannon');
 const identityQuaternion = new THREE.Quaternion()
@@ -16803,7 +16949,7 @@ var Body = {
 module.exports.definition = Body;
 module.exports.Component = AFRAME.registerComponent('body', Body);
 
-},{"../../../lib/CANNON-shape2mesh":2,"cannon-es":4,"three-to-cannon":6}],11:[function(require,module,exports){
+},{"../../../lib/CANNON-shape2mesh":2,"cannon-es":5,"three-to-cannon":7}],12:[function(require,module,exports){
 var Body = require('./body');
 
 /**
@@ -16815,7 +16961,7 @@ var DynamicBody = AFRAME.utils.extend({}, Body.definition);
 
 module.exports = AFRAME.registerComponent('dynamic-body', DynamicBody);
 
-},{"./body":10}],12:[function(require,module,exports){
+},{"./body":11}],13:[function(require,module,exports){
 var Body = require('./body');
 
 /**
@@ -16833,7 +16979,7 @@ StaticBody.schema = AFRAME.utils.extend({}, Body.definition.schema, {
 
 module.exports = AFRAME.registerComponent('static-body', StaticBody);
 
-},{"./body":10}],13:[function(require,module,exports){
+},{"./body":11}],14:[function(require,module,exports){
 var CANNON = require("cannon-es");
 
 module.exports = AFRAME.registerComponent("constraint", {
@@ -16963,7 +17109,7 @@ module.exports = AFRAME.registerComponent("constraint", {
   }
 });
 
-},{"cannon-es":4}],14:[function(require,module,exports){
+},{"cannon-es":5}],15:[function(require,module,exports){
 module.exports = {
   'velocity':   require('./velocity'),
 
@@ -16978,7 +17124,7 @@ module.exports = {
   }
 };
 
-},{"./velocity":15}],15:[function(require,module,exports){
+},{"./velocity":16}],16:[function(require,module,exports){
 /**
  * Velocity, in m/s.
  */
@@ -17024,7 +17170,7 @@ module.exports = AFRAME.registerComponent('velocity', {
   }
 });
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /* global Ammo,THREE */
 const threeToAmmo = require("three-to-ammo");
 const CONSTANTS = require("../../constants"),
@@ -17120,7 +17266,7 @@ var AmmoShape = {
 module.exports.definition = AmmoShape;
 module.exports.Component = AFRAME.registerComponent("ammo-shape", AmmoShape);
 
-},{"../../constants":19,"three-to-ammo":5}],17:[function(require,module,exports){
+},{"../../constants":20,"three-to-ammo":6}],18:[function(require,module,exports){
 var CANNON = require('cannon-es');
 
 var Shape = {
@@ -17244,7 +17390,7 @@ var Shape = {
 module.exports.definition = Shape;
 module.exports.Component = AFRAME.registerComponent('shape', Shape);
 
-},{"cannon-es":4}],18:[function(require,module,exports){
+},{"cannon-es":5}],19:[function(require,module,exports){
 var CANNON = require('cannon-es');
 
 module.exports = AFRAME.registerComponent('spring', {
@@ -17347,7 +17493,7 @@ module.exports = AFRAME.registerComponent('spring', {
   }
 })
 
-},{"cannon-es":4}],19:[function(require,module,exports){
+},{"cannon-es":5}],20:[function(require,module,exports){
 module.exports = {
   GRAVITY: -9.8,
   MAX_INTERVAL: 4 / 60,
@@ -17408,7 +17554,7 @@ module.exports = {
   }
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /* global THREE */
 const Driver = require("./driver");
 
@@ -17603,7 +17749,7 @@ AmmoDriver.prototype.getDebugDrawer = function(scene, options) {
   return this.debugDrawer;
 };
 
-},{"./driver":21}],21:[function(require,module,exports){
+},{"./driver":22}],22:[function(require,module,exports){
 /**
  * Driver - defines limited API to local and remote physics controllers.
  */
@@ -17681,7 +17827,7 @@ function abstractMethod () {
   throw new Error('Method not implemented.');
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = {
   INIT: 'init',
   STEP: 'step',
@@ -17704,7 +17850,7 @@ module.exports = {
   COLLIDE: 'collide'
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var CANNON = require('cannon-es'),
     Driver = require('./driver');
 
@@ -17838,7 +17984,7 @@ LocalDriver.prototype.getContacts = function () {
   return this.world.contacts;
 };
 
-},{"./driver":21,"cannon-es":4}],24:[function(require,module,exports){
+},{"./driver":22,"cannon-es":5}],25:[function(require,module,exports){
 var Driver = require('./driver');
 
 function NetworkDriver () {
@@ -17850,7 +17996,7 @@ NetworkDriver.prototype.constructor = NetworkDriver;
 
 module.exports = NetworkDriver;
 
-},{"./driver":21}],25:[function(require,module,exports){
+},{"./driver":22}],26:[function(require,module,exports){
 /**
  * Stub version of webworkify, for debugging code outside of a webworker.
  */
@@ -17893,7 +18039,7 @@ EventTarget.prototype.postMessage = function (msg) {
   this.target.dispatchEvent('message', {data: msg});
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /* global performance */
 
 var webworkify = require('webworkify'),
@@ -18151,7 +18297,7 @@ WorkerDriver.prototype.getContacts = function () {
   });
 };
 
-},{"../utils/protocol":30,"./driver":21,"./event":22,"./webworkify-debug":25,"./worker":27,"webworkify":7}],27:[function(require,module,exports){
+},{"../utils/protocol":31,"./driver":22,"./event":23,"./webworkify-debug":26,"./worker":28,"webworkify":8}],28:[function(require,module,exports){
 var Event = require('./event'),
     LocalDriver = require('./local-driver'),
     AmmoDriver = require('./ammo-driver'),
@@ -18255,7 +18401,7 @@ module.exports = function (self) {
   }
 };
 
-},{"../utils/protocol":30,"./ammo-driver":20,"./event":22,"./local-driver":23}],28:[function(require,module,exports){
+},{"../utils/protocol":31,"./ammo-driver":21,"./event":23,"./local-driver":24}],29:[function(require,module,exports){
 /* global THREE */
 var CANNON = require('cannon-es'),
     CONSTANTS = require('./constants'),
@@ -18266,6 +18412,7 @@ var LocalDriver = require('./drivers/local-driver'),
     WorkerDriver = require('./drivers/worker-driver'),
     NetworkDriver = require('./drivers/network-driver'),
     AmmoDriver = require('./drivers/ammo-driver');
+    require('aframe-stats-panel')
 
 /**
  * Physics system.
@@ -18622,7 +18769,7 @@ class StatTracker {
              min: this.min.toFixed(this.dps) }
   }
 }
-},{"./constants":19,"./drivers/ammo-driver":20,"./drivers/local-driver":23,"./drivers/network-driver":24,"./drivers/worker-driver":26,"cannon-es":4}],29:[function(require,module,exports){
+},{"./constants":20,"./drivers/ammo-driver":21,"./drivers/local-driver":24,"./drivers/network-driver":25,"./drivers/worker-driver":27,"aframe-stats-panel":3,"cannon-es":5}],30:[function(require,module,exports){
 module.exports.slerp = function ( a, b, t ) {
   if ( t <= 0 ) return a;
   if ( t >= 1 ) return b;
@@ -18687,7 +18834,7 @@ module.exports.slerp = function ( a, b, t ) {
 
 };
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 var CANNON = require('cannon-es');
 var mathUtils = require('./math');
 
@@ -19014,4 +19161,4 @@ function deserializeQuaternion (message) {
   return new CANNON.Quaternion(message[0], message[1], message[2], message[3]);
 }
 
-},{"./math":29,"cannon-es":4}]},{},[1]);
+},{"./math":30,"cannon-es":5}]},{},[1]);
