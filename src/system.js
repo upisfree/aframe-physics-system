@@ -8,7 +8,7 @@ var LocalDriver = require('./drivers/local-driver'),
     WorkerDriver = require('./drivers/worker-driver'),
     NetworkDriver = require('./drivers/network-driver'),
     AmmoDriver = require('./drivers/ammo-driver');
-    require('aframe-stats-panel')
+require('aframe-stats-panel')
 
 /**
  * Physics system.
@@ -46,7 +46,7 @@ module.exports = AFRAME.registerSystem('physics', {
     maxSubSteps: { default: 4 },
     // If using ammo, set the framerate of the simulation
     fixedTimeStep: { default: 1 / 60 },
-    // Whether to output stats, and how to output them.  One or more of "console", "events"
+    // Whether to output stats, and how to output them.  One or more of "console", "events", "panel"
     stats: {type: 'array', default: []}
   },
 
@@ -58,23 +58,12 @@ module.exports = AFRAME.registerSystem('physics', {
 
     // If true, show wireframes around physics bodies.
     this.debug = data.debug;
-
-    // Data used for performance monitoring.
-    this.statsToConsole = this.data.stats.includes("console")
-    this.statsToEvents = this.data.stats.includes("events")
-    if (this.statsToConsole || this.statsToEvents) {
-      this.trackPerf = true;
-      this.engine = new StatTracker(100);
-      this.before = new StatTracker(100);
-      this.after = new StatTracker(100);
-      this.total = new StatTracker(100);
-      this.tickCounter = 0;
-      this.statsData = {};
-    }
+    this.initStats();
 
     this.callbacks = {beforeStep: [], step: [], afterStep: []};
 
     this.listeners = {};
+    
 
     this.driver = null;
     switch (data.driver) {
@@ -143,6 +132,47 @@ module.exports = AFRAME.registerSystem('physics', {
 
     if (this.debug) {
       this.setDebug(true);
+    }
+  },
+
+  initStats() {
+    // Data used for performance monitoring.
+    this.statsToConsole = this.data.stats.includes("console")
+    this.statsToEvents = this.data.stats.includes("events") || this.data.stats.includes("panel")
+    this.statsToPanel = this.data.stats.includes("panel")
+
+    if (this.statsToConsole || this.statsToEvents) {
+      this.trackPerf = true;
+      this.engine = new StatTracker(100);
+      this.before = new StatTracker(100);
+      this.after = new StatTracker(100);
+      this.total = new StatTracker(100);
+      this.tickCounter = 0;
+      this.statsData = {};
+    }
+
+    if (this.statsToPanel) {
+      const scene = this.el.sceneEl;
+      const space = "&nbsp&nbsp&nbsp&nbsp&nbsp"
+    
+      scene.setAttribute("stats-panel", "")
+      scene.setAttribute("stats-group__tick", `label: Physics Ticks: Min ${space} Max ${space} Avg`)
+      scene.setAttribute("stats-row__1", `group: tick;
+                                          event:physics-tick-timer;
+                                          properties: before.min, before.max, before.avg;
+                                          label: Before`)
+      scene.setAttribute("stats-row__2", `group: tick;
+                                          event:physics-tick-timer;
+                                          properties: after.min, after.max, after.avg; 
+                                          label: After`)
+      scene.setAttribute("stats-row__3", `group: tick; 
+                                          event:physics-tick-timer; 
+                                          properties: engine.min, engine.max, engine.avg;
+                                          label: Engine`)
+      scene.setAttribute("stats-row__4", `group: tick;
+                                          event:physics-tick-timer;
+                                          properties: total.min, total.max, total.avg;
+                                          label: Total`)
     }
   },
 

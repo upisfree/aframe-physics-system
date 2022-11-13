@@ -342,4 +342,5 @@ The current map of collisions can be accessed via `AFRAME.scenes[0].systems.phys
 | iterations    | `10`      | The number of solver iterations determines quality of the constraints in the world. |
 | maxSubSteps   | `4`       | The max number of physics steps to calculate per tick.       |
 | fixedTimeStep | `0.01667` | The internal framerate of the physics simulation.            |
-| stats         |           | Where to output performance stats (if any), `console`, `events` (or both).  Configuring `events` generates an event `physics-tick-timer` every 100 frames, with average msecs per tick spent in the engine, wrapper and the two combined (total). |
+| stats         |           | Where to output performance stats (if any), `panel`, `console`, `events` (or some combination). <br />- `panel` output stats to a panel similar to the A-Frame stats panel.<br />-`events` generates `physics-tick-timer` events, which can be processed externally.<br/> -`console`outputs stats to the console. |
+

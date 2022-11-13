@@ -285,7 +285,7 @@ Contact materials define what happens when two objects meet, including physical 
 | workerInterpolate              | true    | Whether the main thread should interpolate physics frames from the worker. |
 | workerInterpBufferSize         | 2       | Number of physics frames to be 'padded' before displaying. Advanced. |
 | workerDebug                    | false   | If true, the worker codepaths are used on the main thread. This is slow, because physics snapshots are needlessly serialized, but helpful for debugging. |
-| stats                          |         | Where to output performance stats (if any), `console`, `events` (or both).  Configuring `events` generates an event `physics-tick-timer` every 100 frames, with average msecs per tick spent in the engine, wrapper and the two combined (total). |
+| stats                          |         | Where to output performance stats (if any), `panel`, `console`, `events` (or some combination). <br />- `panel` output stats to a panel similar to the A-Frame stats panel.<br />-`events` generates `physics-tick-timer` events, which can be processed externally.<br/> -`console`outputs stats to the console. |
 
 More advanced configuration, including specifying different collision behaviors for different objects, is available through the CANNON.js JavaScript API.
 
