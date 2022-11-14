@@ -18408,6 +18408,7 @@ var CANNON = require('cannon-es'),
     C_GRAV = CONSTANTS.GRAVITY,
     C_MAT = CONSTANTS.CONTACT_MATERIAL;
 
+const { TYPE } = require('./constants');
 var LocalDriver = require('./drivers/local-driver'),
     WorkerDriver = require('./drivers/worker-driver'),
     NetworkDriver = require('./drivers/network-driver'),
@@ -18560,6 +18561,20 @@ module.exports = AFRAME.registerSystem('physics', {
       const space = "&nbsp&nbsp&nbsp&nbsp&nbsp"
     
       scene.setAttribute("stats-panel", "")
+      scene.setAttribute("stats-group__bodies", `label: Physics Bodies`)
+      scene.setAttribute("stats-row__b1", `group: bodies;
+                                           event:physics-tick-timer;
+                                           properties: staticBodies;
+                                           label: Static`)
+      scene.setAttribute("stats-row__b2", `group: bodies;
+                                           event:physics-tick-timer;
+                                           properties: dynamicBodies;
+                                           label: Dynamic`)
+      scene.setAttribute("stats-row__b3", `group: bodies;
+                                           event:physics-tick-timer;
+                                           properties: kinematicBodies;
+                                           label: Kinematic`)
+
       scene.setAttribute("stats-group__tick", `label: Physics Ticks: Min ${space} Max ${space} Avg`)
       scene.setAttribute("stats-row__1", `group: tick;
                                           event:physics-tick-timer;
@@ -18626,6 +18641,7 @@ module.exports = AFRAME.registerSystem('physics', {
 
       if (this.tickCounter === 100) {
 
+        this.countBodies()
         this.statsData.engine = this.engine.report;
         this.statsData.before = this.before.report;
         this.statsData.after = this.after.report;
@@ -18646,6 +18662,39 @@ module.exports = AFRAME.registerSystem('physics', {
         this.tickCounter = 0;
       }
     }
+  },
+
+  countBodies() {
+
+    const statsData = this.statsData
+    statsData.staticBodies = 0
+    statsData.kinematicBodies = 0
+    statsData.dynamicBodies = 0
+
+    function type(el) {
+      return el.components['ammo-body'].data.type
+    }
+
+    this.driver.els.forEach((el) => {
+
+      switch(type(el)) {
+        case TYPE.STATIC:
+          statsData.staticBodies++ 
+          break;
+
+        case TYPE.DYNAMIC:
+          statsData.dynamicBodies++ 
+          break;
+
+        case TYPE.KINEMATIC:
+          statsData.kinematicBodies++ 
+          break;
+        
+        default:
+          console.error("Unexpected body type:", type(el))
+          break;
+      }
+    })
   },
 
   setDebug: function(debug) {
