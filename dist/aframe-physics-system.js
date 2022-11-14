@@ -18554,6 +18554,12 @@ module.exports = AFRAME.registerSystem('physics', {
       this.total = new StatTracker(100);
       this.tickCounter = 0;
       this.statsData = {};
+
+      this.countBodies = {
+        "ammo": () => this.countBodiesAmmo(),
+        "local": () => this.countBodiesCannon(false),
+        "worker": () => this.countBodiesCannon(true)
+      }
     }
 
     if (this.statsToPanel) {
@@ -18641,7 +18647,7 @@ module.exports = AFRAME.registerSystem('physics', {
 
       if (this.tickCounter === 100) {
 
-        this.countBodies()
+        this.countBodies[this.data.driver]()
         this.statsData.engine = this.engine.report;
         this.statsData.before = this.before.report;
         this.statsData.after = this.after.report;
@@ -18664,7 +18670,7 @@ module.exports = AFRAME.registerSystem('physics', {
     }
   },
 
-  countBodies() {
+  countBodiesAmmo() {
 
     const statsData = this.statsData
     statsData.staticBodies = 0
@@ -18692,6 +18698,33 @@ module.exports = AFRAME.registerSystem('physics', {
         
         default:
           console.error("Unexpected body type:", type(el))
+          break;
+      }
+    })
+  },
+
+  countBodiesCannon(worker) {
+
+    const statsData = this.statsData
+    statsData.staticBodies = 0
+    statsData.kinematicBodies = 0
+    statsData.dynamicBodies = 0
+
+    const bodies = worker ? Object.values(this.driver.bodies) : this.driver.world.bodies
+
+    bodies.forEach((body) => {
+
+      switch(body.type) {
+        case CANNON.Body.STATIC:
+          statsData.staticBodies++ 
+          break;
+
+        case CANNON.Body.DYNAMIC:
+          statsData.dynamicBodies++ 
+          break;
+
+        default:
+          console.error("Unexpected body type:", body.type)
           break;
       }
     })
