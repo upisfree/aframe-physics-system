@@ -172,10 +172,34 @@ module.exports = AFRAME.registerSystem('physics', {
                                            event:physics-tick-timer;
                                            properties: dynamicBodies;
                                            label: Dynamic`)
-      scene.setAttribute("stats-row__b3", `group: bodies;
-                                           event:physics-tick-timer;
-                                           properties: kinematicBodies;
-                                           label: Kinematic`)
+      if (this.data.driver === 'local' || this.data.driver === 'worker') {
+        scene.setAttribute("stats-row__b4", `group: bodies;
+                                             event:physics-tick-timer;
+                                             properties: contacts;
+                                             label: Contacts`)
+      }
+      else if (this.data.driver === 'ammo') {
+        scene.setAttribute("stats-row__b3", `group: bodies;
+                                             event:physics-tick-timer;
+                                             properties: kinematicBodies;
+                                             label: Kinematic`)
+        scene.setAttribute("stats-row__b4", `group: bodies;
+                                             event:physics-tick-timer;
+                                             properties: manifolds;
+                                             label: Manifolds`)
+        scene.setAttribute("stats-row__b5", `group: bodies;
+                                             event:physics-tick-timer;
+                                             properties: manifoldContacts;
+                                             label: Contacts`)
+        scene.setAttribute("stats-row__b6", `group: bodies;
+                                             event:physics-tick-timer;
+                                             properties: collisions;
+                                             label: Collisions`)
+        scene.setAttribute("stats-row__b7", `group: bodies;
+                                             event:physics-tick-timer;
+                                             properties: collisionKeys;
+                                             label: Coll Keys`)
+      }
 
       scene.setAttribute("stats-group__tick", `label: Physics Ticks: Min ${space} Max ${space} Avg`)
       scene.setAttribute("stats-row__1", `group: tick;
@@ -269,10 +293,18 @@ module.exports = AFRAME.registerSystem('physics', {
   countBodiesAmmo() {
 
     const statsData = this.statsData
+    statsData.manifolds = this.driver.dispatcher.getNumManifolds();
+    statsData.manifoldContacts = 0;
+    for (let i = 0; i < statsData.manifolds; i++) {
+      const manifold = this.driver.dispatcher.getManifoldByIndexInternal(i);
+      statsData.manifoldContacts += manifold.getNumContacts();
+    }
+    statsData.collisions = this.driver.collisions.size;
+    statsData.collisionKeys = this.driver.collisionKeys.length;
     statsData.staticBodies = 0
     statsData.kinematicBodies = 0
     statsData.dynamicBodies = 0
-
+    
     function type(el) {
       return el.components['ammo-body'].data.type
     }
@@ -302,11 +334,12 @@ module.exports = AFRAME.registerSystem('physics', {
   countBodiesCannon(worker) {
 
     const statsData = this.statsData
+    statsData.contacts = worker ? this.driver.contacts.length : this.driver.world.contacts.length;
     statsData.staticBodies = 0
     statsData.kinematicBodies = 0
     statsData.dynamicBodies = 0
 
-    const bodies = worker ? Object.values(this.driver.bodies) : this.driver.world.bodies
+    const bodies = worker ? Object.values(this.driver.bodies)  : this.driver.world.bodies
 
     bodies.forEach((body) => {
 
