@@ -295,4 +295,20 @@ Resources:
 
 * [CANNON.ContactMaterial](http://schteppe.github.io/cannon.js/docs/classes/ContactMaterial.html)
 
-  
+
+## Statistics
+
+The following statistics are available from the Cannon Driver.  Each of these is refreshed every 100 ticks (i.e. every 100 frames).
+
+Some statistics are related to the internals of the Cannon Driver, and are not completely understood at this time - but they may nevertheless be helpful in providing an approximate estimate of the complexity involved in a given physics scene.
+
+| Statistic | Meaning                                                      |
+| --------- | ------------------------------------------------------------ |
+| Static    | The number of static bodies being handled by the physics engine. |
+| Dynamic   | The number of dynamic bodies being handled by the physics engine. |
+| Contacts  | The number of contacts between pairs of bodies.              |
+| Before    | The number of milliseconds per tick before invoking the physics engine.  Typically this is the time taken to synchronize the scene state into the physics engine, e.g. movements of static bodies, or changes to physics shapes.<br />Min = lowest recorded value in the last 100 ticks<br />Max = highest recorded value in the last 100 ticks<br />Avg = mean recorded value over the last 100 ticks. |
+| After     | The number of milliseconds per tick after invoking the physics engine.  Typically this is the time taken to synchronize the physics engine state into the scene, e.g. movements of dynamic bodies.<br />Reported as Min / Max / Avg, as above. |
+| Engine    | The number of milliseconds per tick actually running the physics engine.<br />Reported as Min / Max / Avg, as above. |
+| Total     | The total number of milliseconds of phsyics processing per tick: Before + Engine + After.Reported as Min / Max / Avg, as above. |
+

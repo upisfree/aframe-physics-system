@@ -344,3 +344,23 @@ The current map of collisions can be accessed via `AFRAME.scenes[0].systems.phys
 | fixedTimeStep | `0.01667` | The internal framerate of the physics simulation.            |
 | stats         |           | Where to output performance stats (if any), `panel`, `console`, `events` (or some combination). <br />- `panel` output stats to a panel similar to the A-Frame stats panel.<br />-`events` generates `physics-tick-timer` events, which can be processed externally.<br/> -`console`outputs stats to the console. |
 
+## Statistics
+
+The following statistics are available from the Ammo Driver.  Each of these is refreshed every 100 ticks (i.e. every 100 frames).
+
+Some statistics are related to the internals of the Ammo Driver, and are not completely understood at this time - but they may nevertheless be helpful in providing an approximate estimate of the complexity involved in a given physics scene.
+
+| Statistic  | Meaning                                                      |
+| ---------- | ------------------------------------------------------------ |
+| Static     | The number of static bodies being handled by the physics engine. |
+| Dynamic    | The number of dynamic bodies being handled by the physics engine. |
+| Kinematic  | The number of kinematic bodies being handled by the physics engine. |
+| Manifolds  | A manifold represents a pair of bodies that are close to each other (as assessed at the broad phase), but might have zero one or more actual contacts (assessed in the narrow phase) |
+| Contacts   | The number of actual contacts between pairs of bodies.  There may be zero, one or multiple contacts per manifold |
+| Collisions | The number of current collisions between pairs of bodies.  This means that the two bodies are in contact with each other (one or more contacts).<br />One would expect this number too be lower than the number of Manifolds, but that doesn't seem to consistently be the case - which may indicate a bug, or may just indicate that we need to better understand & explain the exact meanings of these statistics! |
+| Coll Keys  | An alternative measure of the number of current collisions between pairs of bodies, based on a distinct internal storage mechanism.<br />This seems to be consistently lower than Collisions, which may indicate a bug, or may just indicate that we need to better understand & explain the exact meanings of these statistics. |
+| Before     | The number of milliseconds per tick before invoking the physics engine.  Typically this is the time taken to synchronize the scene state into the physics engine, e.g. movements of kinematic bodies, or changes to physics shapes.<br />Min = lowest recorded value in the last 100 ticks<br />Max = highest recorded value in the last 100 ticks<br />Avg = mean recorded value over the last 100 ticks. |
+| After      | The number of milliseconds per tick after invoking the physics engine.  Typically this is the time taken to synchronize the physics engine state into the scene, e.g. movements of dynamic bodies.<br />Reported as Min / Max / Avg, as above. |
+| Engine     | The number of milliseconds per tick actually running the physics engine.<br />Reported as Min / Max / Avg, as above. |
+| Total      | The total number of milliseconds of phsyics processing per tick: Before + Engine + After.Reported as Min / Max / Avg, as above. |
+
