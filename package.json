@@ -43,7 +43,7 @@
   },
   "homepage": "https://c-frame.github.io/aframe-physics-system/",
   "dependencies": {
-    "aframe-stats-panel": "^0.1.1",
+    "aframe-stats-panel": "^0.2.1",
     "ammo-debug-drawer": "^0.1.0",
     "cannon-es": "^0.9.1",
     "three-to-ammo": "^0.1.0",

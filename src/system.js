@@ -139,17 +139,14 @@ module.exports = AFRAME.registerSystem('physics', {
   initStats() {
     // Data used for performance monitoring.
     this.statsToConsole = this.data.stats.includes("console")
-    this.statsToEvents = this.data.stats.includes("events") || this.data.stats.includes("panel")
+    this.statsToEvents = this.data.stats.includes("events")
     this.statsToPanel = this.data.stats.includes("panel")
 
-    if (this.statsToConsole || this.statsToEvents) {
+    if (this.statsToConsole || this.statsToEvents || this.statsToPanel) {
       this.trackPerf = true;
-      this.engine = new StatTracker(100);
-      this.before = new StatTracker(100);
-      this.after = new StatTracker(100);
-      this.total = new StatTracker(100);
-      this.tickCounter = 0;
-      this.statsData = {};
+      
+      this.statsTickData = {};
+      this.statsBodyData = {};
 
       this.countBodies = {
         "ammo": () => this.countBodiesAmmo(),
@@ -158,65 +155,83 @@ module.exports = AFRAME.registerSystem('physics', {
       }
     }
 
+    if (this.trackPerf) {
+      this.tickCounter = 0;
+      const scene = this.el.sceneEl;
+      scene.setAttribute("stats-collector", `inEvent: physics-tick-data;
+                                             properties: before, after, engine, total;
+                                             outputFrequency: 100;
+                                             outEvent: physics-tick-summary;
+                                             outputs: percentile__50, percentile__90, max`);
+    }
+
     if (this.statsToPanel) {
       const scene = this.el.sceneEl;
-      const space = "&nbsp&nbsp&nbsp&nbsp&nbsp"
+      const space = "&nbsp&nbsp&nbsp"
     
       scene.setAttribute("stats-panel", "")
       scene.setAttribute("stats-group__bodies", `label: Physics Bodies`)
       scene.setAttribute("stats-row__b1", `group: bodies;
-                                           event:physics-tick-timer;
+                                           event:physics-body-data;
                                            properties: staticBodies;
                                            label: Static`)
       scene.setAttribute("stats-row__b2", `group: bodies;
-                                           event:physics-tick-timer;
+                                           event:physics-body-data;
                                            properties: dynamicBodies;
                                            label: Dynamic`)
       if (this.data.driver === 'local' || this.data.driver === 'worker') {
-        scene.setAttribute("stats-row__b4", `group: bodies;
-                                             event:physics-tick-timer;
+        scene.setAttribute("stats-row__b3", `group: bodies;
+                                             event:physics-body-data;
                                              properties: contacts;
                                              label: Contacts`)
       }
       else if (this.data.driver === 'ammo') {
         scene.setAttribute("stats-row__b3", `group: bodies;
-                                             event:physics-tick-timer;
+                                             event:physics-body-data;
                                              properties: kinematicBodies;
                                              label: Kinematic`)
         scene.setAttribute("stats-row__b4", `group: bodies;
-                                             event:physics-tick-timer;
+                                             event: physics-body-data;
                                              properties: manifolds;
                                              label: Manifolds`)
         scene.setAttribute("stats-row__b5", `group: bodies;
-                                             event:physics-tick-timer;
+                                             event: physics-body-data;
                                              properties: manifoldContacts;
                                              label: Contacts`)
         scene.setAttribute("stats-row__b6", `group: bodies;
-                                             event:physics-tick-timer;
+                                             event: physics-body-data;
                                              properties: collisions;
                                              label: Collisions`)
         scene.setAttribute("stats-row__b7", `group: bodies;
-                                             event:physics-tick-timer;
+                                             event: physics-body-data;
                                              properties: collisionKeys;
                                              label: Coll Keys`)
       }
 
-      scene.setAttribute("stats-group__tick", `label: Physics Ticks: Min ${space} Max ${space} Avg`)
+      scene.setAttribute("stats-group__tick", `label: Physics Ticks: Median${space}90th % ${space} Max`)
       scene.setAttribute("stats-row__1", `group: tick;
-                                          event:physics-tick-timer;
-                                          properties: before.min, before.max, before.avg;
+                                          event:physics-tick-summary;
+                                          properties: before.percentile__50, 
+                                                      before.percentile__90, 
+                                                      before.max;
                                           label: Before`)
       scene.setAttribute("stats-row__2", `group: tick;
-                                          event:physics-tick-timer;
-                                          properties: after.min, after.max, after.avg; 
+                                          event:physics-tick-summary;
+                                          properties: after.percentile__50, 
+                                                      after.percentile__90, 
+                                                      after.max; 
                                           label: After`)
       scene.setAttribute("stats-row__3", `group: tick; 
-                                          event:physics-tick-timer; 
-                                          properties: engine.min, engine.max, engine.avg;
+                                          event:physics-tick-summary; 
+                                          properties: engine.percentile__50, 
+                                                      engine.percentile__90, 
+                                                      engine.max;
                                           label: Engine`)
       scene.setAttribute("stats-row__4", `group: tick;
-                                          event:physics-tick-timer;
-                                          properties: total.min, total.max, total.avg;
+                                          event:physics-tick-summary;
+                                          properties: total.percentile__50, 
+                                                      total.percentile__90, 
+                                                      total.max;
                                           label: Total`)
     }
   },
@@ -258,33 +273,26 @@ module.exports = AFRAME.registerSystem('physics', {
     if (this.trackPerf) {
       const afterEndTime = performance.now();
 
-      this.before.record(engineStartTime - beforeStartTime)
-      this.engine.record(engineEndTime - engineStartTime)
-      this.after.record(afterEndTime - engineEndTime)
-      this.total.record(afterEndTime - beforeStartTime)
+      this.statsTickData.before = engineStartTime - beforeStartTime
+      this.statsTickData.engine = engineEndTime - engineStartTime
+      this.statsTickData.after = afterEndTime - engineEndTime
+      this.statsTickData.total = afterEndTime - beforeStartTime
+
+      this.el.emit("physics-tick-data", this.statsTickData)
 
       this.tickCounter++;
 
       if (this.tickCounter === 100) {
 
         this.countBodies[this.data.driver]()
-        this.statsData.engine = this.engine.report;
-        this.statsData.before = this.before.report;
-        this.statsData.after = this.after.report;
-        this.statsData.total = this.total.report;
 
         if (this.statsToConsole) {
-          console.log("Physics tick stats:", this.statsData)
+          console.log("Physics body stats:", this.statsBodyData)
         }
 
-        if (this.statsToEvents) {
-          this.el.emit("physics-tick-timer", this.statsData)
+        if (this.statsToEvents  || this.statsToPanel) {
+          this.el.emit("physics-body-data", this.statsBodyData)
         }
-
-        this.before.reset()
-        this.engine.reset()
-        this.after.reset()
-        this.total.reset()
         this.tickCounter = 0;
       }
     }
@@ -292,7 +300,7 @@ module.exports = AFRAME.registerSystem('physics', {
 
   countBodiesAmmo() {
 
-    const statsData = this.statsData
+    const statsData = this.statsBodyData
     statsData.manifolds = this.driver.dispatcher.getNumManifolds();
     statsData.manifoldContacts = 0;
     for (let i = 0; i < statsData.manifolds; i++) {
@@ -333,7 +341,7 @@ module.exports = AFRAME.registerSystem('physics', {
 
   countBodiesCannon(worker) {
 
-    const statsData = this.statsData
+    const statsData = this.statsBodyData
     statsData.contacts = worker ? this.driver.contacts.length : this.driver.world.contacts.length;
     statsData.staticBodies = 0
     statsData.kinematicBodies = 0
@@ -472,41 +480,3 @@ module.exports = AFRAME.registerSystem('physics', {
     return this.driver.getMaterial(name);
   }
 });
-
-class StatTracker {
-  constructor(cycles = 100, dps = 2) {
-    this.cycles = cycles
-    this.dps = dps
-    this.reset()
-  }
-
-  reset() {
-    this.max = 0
-    this.min = Infinity
-    this.cumulative = 0
-    this.counter = 0
-  }
-
-  record(value) {
-    this.cumulative += value
-    if (value > this.max) {
-      this.max = value
-    }
-    if (value < this.min) {
-      this.min = value
-    }
-    this.counter++
-  }
-
-  get avg() {
-    // Average will only be valid if we have recorded the correct number of cycles.
-    console.assert(this.counter === this.cycles)
-    return this.cumulative / this.cycles
-  }
-
-  get report() {
-    return { avg: this.avg.toFixed(this.dps),
-             max: this.max.toFixed(this.dps),
-             min: this.min.toFixed(this.dps) }
-  }
-}

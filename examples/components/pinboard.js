@@ -152,26 +152,26 @@ AFRAME.registerComponent('tick-time-display', {
   init() {
       this.updateData = this.updateData.bind(this);
 
-      this.el.sceneEl.addEventListener('physics-tick-timer', this.updateData)
+      this.el.sceneEl.addEventListener('physics-tick-summary', this.updateData)
 
   },
 
   updateData(evt) {
 
     if (this.data.outputEl) {
-      this.data.outputEl.innerHTML = `Engine: ${evt.detail.engine.avg}<br/>
-                                      Before: ${evt.detail.before.avg}<br/>
-                                      After: ${evt.detail.after.avg}<br/>
-                                      Total: ${evt.detail.total.avg}`
+      this.data.outputEl.innerHTML = `Engine: ${evt.detail.engine.percentile__50}<br/>
+                                      Before: ${evt.detail.before.percentile__50}<br/>
+                                      After: ${evt.detail.after.percentile__50}<br/>
+                                      Total: ${evt.detail.total.percentile__50}`
     }
      
    if (this.data.sceneOutputEl) {
      const d = evt.detail
-     this.data.sceneOutputEl.setAttribute("text", `value: Tick (msecs)\tAve    \tMax    \tMin
-        Engine:  \t${d.engine.avg.padStart(7, ' ')}\t${d.engine.max.padStart(7, ' ')}\t${d.engine.min.padStart(7, ' ')}
-        Before:  \t${d.before.avg.padStart(7, ' ')}\t${d.before.max.padStart(7, ' ')}\t${d.before.min.padStart(7, ' ')}
-        After:   \t${d.after.avg.padStart(7, ' ')}\t${d.after.max.padStart(7, ' ')}\t${d.after.min.padStart(7, ' ')}
-        Total:   \t${d.total.avg.padStart(7, ' ')}\t${d.total.max.padStart(7, ' ')}\t${d.total.min.padStart(7, ' ')}`)
+     this.data.sceneOutputEl.setAttribute("text", `value: Physics Tick Length (msecs)  (over 100 ticks)\n--------------- Median --- 90th % --- Max --
+        Before:  \t${d.before.percentile__50.padStart(7, ' ')}\t${d.before.percentile__90.padStart(7, ' ')}\t${d.before.max.padStart(7, ' ')}
+        After:   \t${d.after.percentile__50.padStart(7, ' ')}\t${d.after.percentile__90.padStart(7, ' ')}\t${d.after.max.padStart(7, ' ')}
+        Engine:  \t${d.engine.percentile__50.padStart(7, ' ')}\t${d.engine.percentile__90.padStart(7, ' ')}\t${d.engine.max.padStart(7, ' ')}
+        Total:   \t${d.total.percentile__50.padStart(7, ' ')}\t${d.total.percentile__90.padStart(7, ' ')}\t${d.total.max.padStart(7, ' ')}`)
    }
   }
 })
