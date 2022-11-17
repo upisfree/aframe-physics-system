@@ -285,7 +285,7 @@ Contact materials define what happens when two objects meet, including physical 
 | workerInterpolate              | true    | Whether the main thread should interpolate physics frames from the worker. |
 | workerInterpBufferSize         | 2       | Number of physics frames to be 'padded' before displaying. Advanced. |
 | workerDebug                    | false   | If true, the worker codepaths are used on the main thread. This is slow, because physics snapshots are needlessly serialized, but helpful for debugging. |
-| stats                          |         | Where to output performance stats (if any), `console`, `events` (or both).  Configuring `events` generates an event `physics-tick-timer` every 100 frames, with average msecs per tick spent in the engine, wrapper and the two combined (total). |
+| stats                          |         | Where to output performance stats (if any), `panel`, `console`, `events` (or some combination). <br />- `panel` output stats to a panel similar to the A-Frame stats panel.<br />-`events` generates `physics-tick-timer` events, which can be processed externally.<br/> -`console`outputs stats to the console. |
 
 More advanced configuration, including specifying different collision behaviors for different objects, is available through the CANNON.js JavaScript API.
 
@@ -295,4 +295,22 @@ Resources:
 
 * [CANNON.ContactMaterial](http://schteppe.github.io/cannon.js/docs/classes/ContactMaterial.html)
 
-  
+
+## Statistics
+
+The following statistics are available from the Cannon Driver.  Each of these is refreshed every 100 ticks (i.e. every 100 frames).
+
+Some statistics are related to the internals of the Cannon Driver, and are not completely understood at this time - but they may nevertheless be helpful in providing an approximate estimate of the complexity involved in a given physics scene.
+
+| Statistic | Meaning                                                      |
+| --------- | ------------------------------------------------------------ |
+| Static    | The number of static bodies being handled by the physics engine. |
+| Dynamic   | The number of dynamic bodies being handled by the physics engine. |
+| Contacts  | The number of contacts between pairs of bodies.              |
+| Before    | The number of milliseconds per tick before invoking the physics engine.  Typically this is the time taken to synchronize the scene state into the physics engine, e.g. movements of static bodies, or changes to physics shapes.<br />Median = median value in the last 100 ticks<br />90th % = 90th percentile value in the last 100 ticks<br />99th % = maximum recorded value over the last 100 ticks. |
+| After     | The number of milliseconds per tick after invoking the physics engine.  Typically this is the time taken to synchronize the physics engine state into the scene, e.g. movements of dynamic bodies.<br />Reported as Median / 90th / 99th percentiles, as above. |
+| Engine    | The number of milliseconds per tick actually running the physics engine.<br />Reported as Median / 90th / 99th percentiles, as above. |
+| Total     | The total number of milliseconds of physics processing per tick: Before + Engine + After.  Reported as Median / 90th / 99th percentiles, as above. |
+
+
+

@@ -152,18 +152,26 @@ AFRAME.registerComponent('tick-time-display', {
   init() {
       this.updateData = this.updateData.bind(this);
 
-      this.el.sceneEl.addEventListener('physics-tick-timer', this.updateData)
+      this.el.sceneEl.addEventListener('physics-tick-summary', this.updateData)
 
   },
 
   updateData(evt) {
 
     if (this.data.outputEl) {
-      this.data.outputEl.innerHTML = `${evt.detail.engine} engine / ${evt.detail.wrapper} wrapper`
+      this.data.outputEl.innerHTML = `Engine: ${evt.detail.engine.percentile__50}<br/>
+                                      Before: ${evt.detail.before.percentile__50}<br/>
+                                      After: ${evt.detail.after.percentile__50}<br/>
+                                      Total: ${evt.detail.total.percentile__50}`
     }
      
    if (this.data.sceneOutputEl) {
-     this.data.sceneOutputEl.setAttribute("text", `value: Average tick (msecs): ${evt.detail.engine} engine /  ${evt.detail.wrapper} wrapper`)
+     const d = evt.detail
+     this.data.sceneOutputEl.setAttribute("text", `value: Physics Tick Length (msecs)  (over 100 ticks)\n--------------- Median --- 90th% --- 99th% --
+        Before:  \t${d.before.percentile__50.padStart(7, ' ')}\t${d.before.percentile__90.padStart(7, ' ')}\t${d.before.max.padStart(7, ' ')}
+        After:   \t${d.after.percentile__50.padStart(7, ' ')}\t${d.after.percentile__90.padStart(7, ' ')}\t${d.after.max.padStart(7, ' ')}
+        Engine:  \t${d.engine.percentile__50.padStart(7, ' ')}\t${d.engine.percentile__90.padStart(7, ' ')}\t${d.engine.max.padStart(7, ' ')}
+        Total:   \t${d.total.percentile__50.padStart(7, ' ')}\t${d.total.percentile__90.padStart(7, ' ')}\t${d.total.max.padStart(7, ' ')}`)
    }
   }
 })

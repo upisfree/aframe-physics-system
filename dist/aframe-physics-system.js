@@ -22,7 +22,7 @@ module.exports = {
 // Export CANNON.js.
 window.CANNON = window.CANNON || CANNON;
 
-},{"./src/components/ammo-constraint":8,"./src/components/body/ammo-body":9,"./src/components/body/body":10,"./src/components/body/dynamic-body":11,"./src/components/body/static-body":12,"./src/components/constraint":13,"./src/components/math":14,"./src/components/shape/ammo-shape":16,"./src/components/shape/shape":17,"./src/components/spring":18,"./src/system":28,"cannon-es":4}],2:[function(require,module,exports){
+},{"./src/components/ammo-constraint":9,"./src/components/body/ammo-body":10,"./src/components/body/body":11,"./src/components/body/dynamic-body":12,"./src/components/body/static-body":13,"./src/components/constraint":14,"./src/components/math":15,"./src/components/shape/ammo-shape":17,"./src/components/shape/shape":18,"./src/components/spring":19,"./src/system":29,"cannon-es":5}],2:[function(require,module,exports){
 /**
  * CANNON.shape2mesh
  *
@@ -193,7 +193,289 @@ CANNON.shape2mesh = function(body){
 
 module.exports = CANNON.shape2mesh;
 
-},{"cannon-es":4}],3:[function(require,module,exports){
+},{"cannon-es":5}],3:[function(require,module,exports){
+AFRAME.registerComponent('stats-panel', {
+  schema: {
+    merge: {type: 'boolean', default: true}
+  },
+
+  init() {
+
+    const container = document.querySelector('.rs-container')
+
+    if (container && this.data.merge) {
+      //stats panel exists, just merge into it.
+      this.container = container
+      return;
+    }
+
+    // if stats panel doesn't exist, add one to support our custom stats.
+    this.base = document.createElement('div')
+    this.base.classList.add('rs-base')
+    const body = document.body || document.getElementsByTagName('body')[0]
+
+    if (container && !this.data.merge) {
+      this.base.style.top = "auto"
+      this.base.style.bottom = "20px"
+    }
+
+    body.appendChild(this.base)
+
+    this.container = document.createElement('div')
+    this.container.classList.add('rs-container')
+    this.base.appendChild(this.container)
+  }
+});
+
+AFRAME.registerComponent('stats-group', {
+  multiple: true,
+  schema: {
+    label: {type: 'string'}
+  },
+
+  init() {
+
+    let container
+    const baseComponent = this.el.components['stats-panel']
+    if (baseComponent) {
+      container = baseComponent.container
+    }
+    else {
+      container = document.querySelector('.rs-container')
+    }
+
+    if (!container) {
+      console.warn(`Couldn't find stats container to add stats to.
+                    Add either stats or stats-panel component to a-scene`)
+      return;
+    }
+    
+    this.groupHeader = document.createElement('h1')
+    this.groupHeader.innerHTML = this.data.label
+    container.appendChild(this.groupHeader)
+
+    this.group = document.createElement('div')
+    this.group.classList.add('rs-group')
+    // rs-group hs style flex-direction of 'column-reverse'
+    // No idea why it's like that, but it's not what we want for our stats.
+    // We prefer them rendered in the order speified.
+    // So override this style.
+    this.group.style.flexDirection = 'column'
+    this.group.style.webKitFlexDirection = 'column'
+    container.appendChild(this.group)
+  }
+});
+
+AFRAME.registerComponent('stats-row', {
+  multiple: true,
+  schema: {
+    // name of the group to add the stats row to.
+    group: {type: 'string'},
+
+    // name of an event to listen for
+    event: {type: 'string'},
+
+    // property from event to output in stats panel
+    properties: {type: 'array'},
+
+    // label for the row in the stats panel
+    label: {type: 'string'}
+  },
+
+  init () {
+
+    const groupComponentName = "stats-group__" + this.data.group
+    const groupComponent = this.el.components[groupComponentName] ||
+                           this.el.sceneEl.components[groupComponentName] ||
+                           this.el.components["stats-group"] ||
+                           this.el.sceneEl.components["stats-group"]
+
+    if (!groupComponent) {
+      console.warn(`Couldn't find stats group ${groupComponentName}`)
+      return;
+    }
+  
+    this.counter = document.createElement('div')
+    this.counter.classList.add('rs-counter-base')
+    groupComponent.group.appendChild(this.counter)
+
+    this.counterId = document.createElement('div')
+    this.counterId.classList.add('rs-counter-id')
+    this.counterId.innerHTML = this.data.label
+    this.counter.appendChild(this.counterId)
+
+    this.counterValues = {}
+    this.data.properties.forEach((property) => {
+      const counterValue = document.createElement('div')
+      counterValue.classList.add('rs-counter-value')
+      counterValue.innerHTML = "..."
+      this.counter.appendChild(counterValue)
+      this.counterValues[property] = counterValue
+    })
+
+    this.updateData = this.updateData.bind(this)
+    this.el.addEventListener(this.data.event, this.updateData)
+
+    this.splitCache = {}
+  },
+
+  updateData(e) {
+    
+    this.data.properties.forEach((property) => {
+      const split = this.splitDot(property);
+      let value = e.detail;
+      for (i = 0; i < split.length; i++) {
+        value = value[split[i]];
+      }
+      this.counterValues[property].innerHTML = value
+    })
+  },
+
+  splitDot (path) {
+    if (path in this.splitCache) { return this.splitCache[path]; }
+    this.splitCache[path] = path.split('.');
+    return this.splitCache[path];
+  }
+
+});
+
+AFRAME.registerComponent('stats-collector', {
+  multiple: true,
+
+  schema: {
+    // name of an event to listen for
+    inEvent: {type: 'string'},
+
+    // property from event to output in stats panel
+    properties: {type: 'array'},
+
+    // frequency of output in terms of events received.
+    outputFrequency: {type: 'number', default: 100},
+
+    // name of event to emit
+    outEvent: {type: 'string'},
+    
+    // outputs (generated for each property)
+    // Combination of: mean, max, percentile__XX.X (where XX.X is a number)
+    outputs: {type: 'array'},
+
+    // Whether to output to console as well as generating events
+    // If a string is specified, this is output to console, together with the event data
+    // If no string is specified, nothing is output to console.
+    outputToConsole: {type: 'string'}
+  },
+
+  init() {
+    
+    this.statsData = {}
+    this.resetData()
+    this.outputDetail = {}
+    this.data.properties.forEach((property) => {
+      this.outputDetail[property] = {}
+    })
+
+    this.statsReceived = this.statsReceived.bind(this)
+    this.el.addEventListener(this.data.inEvent, this.statsReceived)
+  },
+  
+  resetData() {
+
+    this.counter = 0
+    this.data.properties.forEach((property) => {
+      
+      // For calculating percentiles like 0.01 and 99.9% we'll want to store
+      // additional data - something like this...
+      // Store off outliers, and discard data.
+      // const min = Math.min(...this.statsData[property])
+      // this.lowOutliers[property].push(min)
+      // const max = Math.max(...this.statsData[property])
+      // this.highOutliers[property].push(max)
+
+      this.statsData[property] = []
+    })
+  },
+
+  statsReceived(e) {
+
+    this.updateData(e.detail)
+
+    this.counter++ 
+    if (this.counter === this.data.outputFrequency) {
+      this.outputData()
+      this.resetData()
+    }
+  },
+
+  updateData(detail) {
+
+    this.data.properties.forEach((property) => {
+      let value = detail;
+      value = value[property];
+      this.statsData[property].push(value)
+    })
+  },
+
+  outputData() {
+    this.data.properties.forEach((property) => {
+      this.data.outputs.forEach((output) => {
+        this.outputDetail[property][output] = this.computeOutput(output, this.statsData[property])
+      })
+    })
+
+    if (this.data.outEvent) {
+      this.el.emit(this.data.outEvent, this.outputDetail)
+    }
+
+    if (this.data.outputToConsole) {
+      console.log(this.data.outputToConsole, this.outputDetail)
+    }
+  },
+
+  computeOutput(outputInstruction, data) {
+
+    const outputInstructions = outputInstruction.split("__")
+    const outputType = outputInstructions[0]
+    let output
+
+    switch (outputType) {
+      case "mean":
+        output = data.reduce((a, b) => a + b, 0) / data.length;
+        break;
+      
+      case "max":
+        output = Math.max(...data)
+        break;
+
+      case "min":
+        output = Math.min(...data)
+        break;
+
+      case "percentile":
+        const sorted = data.sort((a, b) => a - b)
+        // decimal percentiles encoded like 99+9 rather than 99.9 due to "." being used as a 
+        // separator for nested properties.
+        const percentileString = outputInstructions[1].replace("_", ".")
+        const proportion = +percentileString / 100
+
+        // Note that this calculation of the percentile is inaccurate when there is insufficient data
+        // e.g. for 0.1th or 99.9th percentile when only 100 data points.
+        // Greater accuracy would require storing off more data (specifically outliers) and folding these
+        // into the computation.
+        const position = (data.length - 1) * proportion
+        const base = Math.floor(position)
+        const delta = position - base;
+        if (sorted[base + 1] !== undefined) {
+            output = sorted[base] + delta * (sorted[base + 1] - sorted[base]);
+        } else {
+            output = sorted[base];
+        }
+        break;
+    }
+    return output.toFixed(2)
+  }
+});
+
+},{}],4:[function(require,module,exports){
 /* global Ammo,THREE */
 
 THREE.AmmoDebugConstants = {
@@ -359,7 +641,7 @@ THREE.AmmoDebugDrawer.prototype.getDebugMode = function() {
   return this.debugDrawMode;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -13576,7 +13858,7 @@ exports.Vec3 = Vec3;
 exports.Vec3Pool = Vec3Pool;
 exports.World = World;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 /* global Ammo,THREE */
 
@@ -14337,7 +14619,7 @@ const _computeBounds = (function() {
   };
 })();
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (global){
 var cannonEs = require('cannon-es');
 var three = (typeof window !== "undefined" ? window['THREE'] : typeof global !== "undefined" ? global['THREE'] : null);
@@ -15666,7 +15948,7 @@ exports.threeToCannon = threeToCannon;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"cannon-es":4}],7:[function(require,module,exports){
+},{"cannon-es":5}],8:[function(require,module,exports){
 var bundleFn = arguments[3];
 var sources = arguments[4];
 var cache = arguments[5];
@@ -15749,7 +16031,7 @@ module.exports = function (fn, options) {
     return worker;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /* global Ammo */
 const CONSTRAINT = require("../constants").CONSTRAINT;
 
@@ -15925,7 +16207,7 @@ module.exports = AFRAME.registerComponent("ammo-constraint", {
   }
 });
 
-},{"../constants":19}],9:[function(require,module,exports){
+},{"../constants":20}],10:[function(require,module,exports){
 /* global Ammo,THREE */
 const AmmoDebugDrawer = require("ammo-debug-drawer");
 const threeToAmmo = require("three-to-ammo");
@@ -16448,7 +16730,7 @@ let AmmoBody = {
 module.exports.definition = AmmoBody;
 module.exports.Component = AFRAME.registerComponent("ammo-body", AmmoBody);
 
-},{"../../constants":19,"ammo-debug-drawer":3,"three-to-ammo":5}],10:[function(require,module,exports){
+},{"../../constants":20,"ammo-debug-drawer":4,"three-to-ammo":6}],11:[function(require,module,exports){
 var CANNON = require('cannon-es');
 const { threeToCannon, ShapeType } = require('three-to-cannon');
 const identityQuaternion = new THREE.Quaternion()
@@ -16803,7 +17085,7 @@ var Body = {
 module.exports.definition = Body;
 module.exports.Component = AFRAME.registerComponent('body', Body);
 
-},{"../../../lib/CANNON-shape2mesh":2,"cannon-es":4,"three-to-cannon":6}],11:[function(require,module,exports){
+},{"../../../lib/CANNON-shape2mesh":2,"cannon-es":5,"three-to-cannon":7}],12:[function(require,module,exports){
 var Body = require('./body');
 
 /**
@@ -16815,7 +17097,7 @@ var DynamicBody = AFRAME.utils.extend({}, Body.definition);
 
 module.exports = AFRAME.registerComponent('dynamic-body', DynamicBody);
 
-},{"./body":10}],12:[function(require,module,exports){
+},{"./body":11}],13:[function(require,module,exports){
 var Body = require('./body');
 
 /**
@@ -16833,7 +17115,7 @@ StaticBody.schema = AFRAME.utils.extend({}, Body.definition.schema, {
 
 module.exports = AFRAME.registerComponent('static-body', StaticBody);
 
-},{"./body":10}],13:[function(require,module,exports){
+},{"./body":11}],14:[function(require,module,exports){
 var CANNON = require("cannon-es");
 
 module.exports = AFRAME.registerComponent("constraint", {
@@ -16963,7 +17245,7 @@ module.exports = AFRAME.registerComponent("constraint", {
   }
 });
 
-},{"cannon-es":4}],14:[function(require,module,exports){
+},{"cannon-es":5}],15:[function(require,module,exports){
 module.exports = {
   'velocity':   require('./velocity'),
 
@@ -16978,7 +17260,7 @@ module.exports = {
   }
 };
 
-},{"./velocity":15}],15:[function(require,module,exports){
+},{"./velocity":16}],16:[function(require,module,exports){
 /**
  * Velocity, in m/s.
  */
@@ -17024,7 +17306,7 @@ module.exports = AFRAME.registerComponent('velocity', {
   }
 });
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /* global Ammo,THREE */
 const threeToAmmo = require("three-to-ammo");
 const CONSTANTS = require("../../constants"),
@@ -17120,7 +17402,7 @@ var AmmoShape = {
 module.exports.definition = AmmoShape;
 module.exports.Component = AFRAME.registerComponent("ammo-shape", AmmoShape);
 
-},{"../../constants":19,"three-to-ammo":5}],17:[function(require,module,exports){
+},{"../../constants":20,"three-to-ammo":6}],18:[function(require,module,exports){
 var CANNON = require('cannon-es');
 
 var Shape = {
@@ -17244,7 +17526,7 @@ var Shape = {
 module.exports.definition = Shape;
 module.exports.Component = AFRAME.registerComponent('shape', Shape);
 
-},{"cannon-es":4}],18:[function(require,module,exports){
+},{"cannon-es":5}],19:[function(require,module,exports){
 var CANNON = require('cannon-es');
 
 module.exports = AFRAME.registerComponent('spring', {
@@ -17347,7 +17629,7 @@ module.exports = AFRAME.registerComponent('spring', {
   }
 })
 
-},{"cannon-es":4}],19:[function(require,module,exports){
+},{"cannon-es":5}],20:[function(require,module,exports){
 module.exports = {
   GRAVITY: -9.8,
   MAX_INTERVAL: 4 / 60,
@@ -17408,7 +17690,7 @@ module.exports = {
   }
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /* global THREE */
 const Driver = require("./driver");
 
@@ -17603,7 +17885,7 @@ AmmoDriver.prototype.getDebugDrawer = function(scene, options) {
   return this.debugDrawer;
 };
 
-},{"./driver":21}],21:[function(require,module,exports){
+},{"./driver":22}],22:[function(require,module,exports){
 /**
  * Driver - defines limited API to local and remote physics controllers.
  */
@@ -17681,7 +17963,7 @@ function abstractMethod () {
   throw new Error('Method not implemented.');
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = {
   INIT: 'init',
   STEP: 'step',
@@ -17704,7 +17986,7 @@ module.exports = {
   COLLIDE: 'collide'
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var CANNON = require('cannon-es'),
     Driver = require('./driver');
 
@@ -17838,7 +18120,7 @@ LocalDriver.prototype.getContacts = function () {
   return this.world.contacts;
 };
 
-},{"./driver":21,"cannon-es":4}],24:[function(require,module,exports){
+},{"./driver":22,"cannon-es":5}],25:[function(require,module,exports){
 var Driver = require('./driver');
 
 function NetworkDriver () {
@@ -17850,7 +18132,7 @@ NetworkDriver.prototype.constructor = NetworkDriver;
 
 module.exports = NetworkDriver;
 
-},{"./driver":21}],25:[function(require,module,exports){
+},{"./driver":22}],26:[function(require,module,exports){
 /**
  * Stub version of webworkify, for debugging code outside of a webworker.
  */
@@ -17893,7 +18175,7 @@ EventTarget.prototype.postMessage = function (msg) {
   this.target.dispatchEvent('message', {data: msg});
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /* global performance */
 
 var webworkify = require('webworkify'),
@@ -18151,7 +18433,7 @@ WorkerDriver.prototype.getContacts = function () {
   });
 };
 
-},{"../utils/protocol":30,"./driver":21,"./event":22,"./webworkify-debug":25,"./worker":27,"webworkify":7}],27:[function(require,module,exports){
+},{"../utils/protocol":31,"./driver":22,"./event":23,"./webworkify-debug":26,"./worker":28,"webworkify":8}],28:[function(require,module,exports){
 var Event = require('./event'),
     LocalDriver = require('./local-driver'),
     AmmoDriver = require('./ammo-driver'),
@@ -18255,17 +18537,19 @@ module.exports = function (self) {
   }
 };
 
-},{"../utils/protocol":30,"./ammo-driver":20,"./event":22,"./local-driver":23}],28:[function(require,module,exports){
+},{"../utils/protocol":31,"./ammo-driver":21,"./event":23,"./local-driver":24}],29:[function(require,module,exports){
 /* global THREE */
 var CANNON = require('cannon-es'),
     CONSTANTS = require('./constants'),
     C_GRAV = CONSTANTS.GRAVITY,
     C_MAT = CONSTANTS.CONTACT_MATERIAL;
 
+const { TYPE } = require('./constants');
 var LocalDriver = require('./drivers/local-driver'),
     WorkerDriver = require('./drivers/worker-driver'),
     NetworkDriver = require('./drivers/network-driver'),
     AmmoDriver = require('./drivers/ammo-driver');
+require('aframe-stats-panel')
 
 /**
  * Physics system.
@@ -18303,7 +18587,7 @@ module.exports = AFRAME.registerSystem('physics', {
     maxSubSteps: { default: 4 },
     // If using ammo, set the framerate of the simulation
     fixedTimeStep: { default: 1 / 60 },
-    // Whether to output stats, and how to output them.  One or more of "console", "events"
+    // Whether to output stats, and how to output them.  One or more of "console", "events", "panel"
     stats: {type: 'array', default: []}
   },
 
@@ -18315,20 +18599,12 @@ module.exports = AFRAME.registerSystem('physics', {
 
     // If true, show wireframes around physics bodies.
     this.debug = data.debug;
-
-    // Data used for performance monitoring.
-    this.statsToConsole = this.data.stats.includes("console")
-    this.statsToEvents = this.data.stats.includes("events")
-    if (this.statsToConsole || this.statsToEvents) {
-      this.trackPerf = true;
-      this.cumulativeTimeEngine = 0;
-      this.cumulativeTimeWrapper = 0;
-      this.tickCounter = 0;
-    }
+    this.initStats();
 
     this.callbacks = {beforeStep: [], step: [], afterStep: []};
 
     this.listeners = {};
+    
 
     this.driver = null;
     switch (data.driver) {
@@ -18400,6 +18676,116 @@ module.exports = AFRAME.registerSystem('physics', {
     }
   },
 
+  initStats() {
+    // Data used for performance monitoring.
+    this.statsToConsole = this.data.stats.includes("console")
+    this.statsToEvents = this.data.stats.includes("events")
+    this.statsToPanel = this.data.stats.includes("panel")
+
+    if (this.statsToConsole || this.statsToEvents || this.statsToPanel) {
+      this.trackPerf = true;
+      this.tickCounter = 0;
+      
+      this.statsTickData = {};
+      this.statsBodyData = {};
+
+      this.countBodies = {
+        "ammo": () => this.countBodiesAmmo(),
+        "local": () => this.countBodiesCannon(false),
+        "worker": () => this.countBodiesCannon(true)
+      }
+
+      this.bodyTypeToStatsPropertyMap = {
+        "ammo": {
+          [TYPE.STATIC] : "staticBodies",
+          [TYPE.KINEMATIC] : "kinematicBodies",
+          [TYPE.DYNAMIC] : "dynamicBodies",
+        }, 
+        "cannon": {
+          [CANNON.Body.STATIC] : "staticBodies",
+          [CANNON.Body.DYNAMIC] : "dynamicBodies"
+        }
+      }
+      
+      const scene = this.el.sceneEl;
+      scene.setAttribute("stats-collector", `inEvent: physics-tick-data;
+                                             properties: before, after, engine, total;
+                                             outputFrequency: 100;
+                                             outEvent: physics-tick-summary;
+                                             outputs: percentile__50, percentile__90, max`);
+    }
+
+    if (this.statsToPanel) {
+      const scene = this.el.sceneEl;
+      const space = "&nbsp&nbsp&nbsp"
+    
+      scene.setAttribute("stats-panel", "")
+      scene.setAttribute("stats-group__bodies", `label: Physics Bodies`)
+      scene.setAttribute("stats-row__b1", `group: bodies;
+                                           event:physics-body-data;
+                                           properties: staticBodies;
+                                           label: Static`)
+      scene.setAttribute("stats-row__b2", `group: bodies;
+                                           event:physics-body-data;
+                                           properties: dynamicBodies;
+                                           label: Dynamic`)
+      if (this.data.driver === 'local' || this.data.driver === 'worker') {
+        scene.setAttribute("stats-row__b3", `group: bodies;
+                                             event:physics-body-data;
+                                             properties: contacts;
+                                             label: Contacts`)
+      }
+      else if (this.data.driver === 'ammo') {
+        scene.setAttribute("stats-row__b3", `group: bodies;
+                                             event:physics-body-data;
+                                             properties: kinematicBodies;
+                                             label: Kinematic`)
+        scene.setAttribute("stats-row__b4", `group: bodies;
+                                             event: physics-body-data;
+                                             properties: manifolds;
+                                             label: Manifolds`)
+        scene.setAttribute("stats-row__b5", `group: bodies;
+                                             event: physics-body-data;
+                                             properties: manifoldContacts;
+                                             label: Contacts`)
+        scene.setAttribute("stats-row__b6", `group: bodies;
+                                             event: physics-body-data;
+                                             properties: collisions;
+                                             label: Collisions`)
+        scene.setAttribute("stats-row__b7", `group: bodies;
+                                             event: physics-body-data;
+                                             properties: collisionKeys;
+                                             label: Coll Keys`)
+      }
+
+      scene.setAttribute("stats-group__tick", `label: Physics Ticks: Median${space}90th%${space}99th%`)
+      scene.setAttribute("stats-row__1", `group: tick;
+                                          event:physics-tick-summary;
+                                          properties: before.percentile__50, 
+                                                      before.percentile__90, 
+                                                      before.max;
+                                          label: Before`)
+      scene.setAttribute("stats-row__2", `group: tick;
+                                          event:physics-tick-summary;
+                                          properties: after.percentile__50, 
+                                                      after.percentile__90, 
+                                                      after.max; 
+                                          label: After`)
+      scene.setAttribute("stats-row__3", `group: tick; 
+                                          event:physics-tick-summary; 
+                                          properties: engine.percentile__50, 
+                                                      engine.percentile__90, 
+                                                      engine.max;
+                                          label: Engine`)
+      scene.setAttribute("stats-row__4", `group: tick;
+                                          event:physics-tick-summary;
+                                          properties: total.percentile__50, 
+                                                      total.percentile__90, 
+                                                      total.max;
+                                          label: Total`)
+    }
+  },
+
   /**
    * Updates the physics world on each tick of the A-Frame scene. It would be
    * entirely possible to separate the two – updating physics more or less
@@ -18411,7 +18797,7 @@ module.exports = AFRAME.registerSystem('physics', {
   tick: function (t, dt) {
     if (!this.initialized || !dt) return;
 
-    const wrapperStartTime = Date.now();
+    const beforeStartTime = performance.now();
 
     var i;
     var callbacks = this.callbacks;
@@ -18420,15 +18806,12 @@ module.exports = AFRAME.registerSystem('physics', {
       this.callbacks.beforeStep[i].beforeStep(t, dt);
     }
 
-    const engineStartTime = Date.now();
+    const engineStartTime = performance.now();
 
     this.driver.step(Math.min(dt / 1000, this.data.maxInterval));
 
-    const engineEndTime = Date.now();
-    this.cumulativeTimeEngine += engineEndTime;
-    this.cumulativeTimeEngine -= engineStartTime;
-    this.tickCounter++;
-    
+    const engineEndTime = performance.now();
+
     for (i = 0; i < callbacks.step.length; i++) {
       callbacks.step[i].step(t, dt);
     }
@@ -18438,32 +18821,71 @@ module.exports = AFRAME.registerSystem('physics', {
     }
 
     if (this.trackPerf) {
-      const wrapperEndTime = Date.now();
-      this.cumulativeTimeWrapper += wrapperEndTime;
-      this.cumulativeTimeWrapper -= wrapperStartTime;
-      this.cumulativeTimeWrapper -= engineEndTime;
-      this.cumulativeTimeWrapper += engineStartTime;
+      const afterEndTime = performance.now();
+
+      this.statsTickData.before = engineStartTime - beforeStartTime
+      this.statsTickData.engine = engineEndTime - engineStartTime
+      this.statsTickData.after = afterEndTime - engineEndTime
+      this.statsTickData.total = afterEndTime - beforeStartTime
+
+      this.el.emit("physics-tick-data", this.statsTickData)
+
+      this.tickCounter++;
 
       if (this.tickCounter === 100) {
+
+        this.countBodies[this.data.driver]()
+
         if (this.statsToConsole) {
-          console.log(`Avg. physics tick duration (engine): ${this.cumulativeTimeEngine / 100} msecs`);
-          console.log(`Avg. physics tick duration (wrapper): ${this.cumulativeTimeWrapper / 100} msecs`);
+          console.log("Physics body stats:", this.statsBodyData)
         }
 
-        if (this.statsToEvents) {
-          const engine = this.cumulativeTimeEngine / 100
-          const wrapper = this.cumulativeTimeWrapper / 100
-          const total = engine + wrapper
-          this.el.emit("physics-tick-timer", {engine: engine.toFixed(2),
-                                              wrapper: wrapper.toFixed(2), 
-                                              total: total.toFixed(2) })
+        if (this.statsToEvents  || this.statsToPanel) {
+          this.el.emit("physics-body-data", this.statsBodyData)
         }
-        
         this.tickCounter = 0;
-        this.cumulativeTimeEngine = 0;
-        this.cumulativeTimeWrapper = 0;
       }
     }
+  },
+
+  countBodiesAmmo() {
+
+    const statsData = this.statsBodyData
+    statsData.manifolds = this.driver.dispatcher.getNumManifolds();
+    statsData.manifoldContacts = 0;
+    for (let i = 0; i < statsData.manifolds; i++) {
+      const manifold = this.driver.dispatcher.getManifoldByIndexInternal(i);
+      statsData.manifoldContacts += manifold.getNumContacts();
+    }
+    statsData.collisions = this.driver.collisions.size;
+    statsData.collisionKeys = this.driver.collisionKeys.length;
+    statsData.staticBodies = 0
+    statsData.kinematicBodies = 0
+    statsData.dynamicBodies = 0
+    
+    function type(el) {
+      return el.components['ammo-body'].data.type
+    }
+
+    this.driver.els.forEach((el) => {
+      const property = this.bodyTypeToStatsPropertyMap["ammo"][type(el)]
+      statsData[property]++
+    })
+  },
+
+  countBodiesCannon(worker) {
+
+    const statsData = this.statsBodyData
+    statsData.contacts = worker ? this.driver.contacts.length : this.driver.world.contacts.length;
+    statsData.staticBodies = 0
+    statsData.dynamicBodies = 0
+
+    const bodies = worker ? Object.values(this.driver.bodies)  : this.driver.world.bodies
+
+    bodies.forEach((body) => {
+      const property = this.bodyTypeToStatsPropertyMap["cannon"][body.type]
+      statsData[property]++
+    })
   },
 
   setDebug: function(debug) {
@@ -18580,7 +19002,7 @@ module.exports = AFRAME.registerSystem('physics', {
   }
 });
 
-},{"./constants":19,"./drivers/ammo-driver":20,"./drivers/local-driver":23,"./drivers/network-driver":24,"./drivers/worker-driver":26,"cannon-es":4}],29:[function(require,module,exports){
+},{"./constants":20,"./drivers/ammo-driver":21,"./drivers/local-driver":24,"./drivers/network-driver":25,"./drivers/worker-driver":27,"aframe-stats-panel":3,"cannon-es":5}],30:[function(require,module,exports){
 module.exports.slerp = function ( a, b, t ) {
   if ( t <= 0 ) return a;
   if ( t >= 1 ) return b;
@@ -18645,7 +19067,7 @@ module.exports.slerp = function ( a, b, t ) {
 
 };
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 var CANNON = require('cannon-es');
 var mathUtils = require('./math');
 
@@ -18972,4 +19394,4 @@ function deserializeQuaternion (message) {
   return new CANNON.Quaternion(message[0], message[1], message[2], message[3]);
 }
 
-},{"./math":29,"cannon-es":4}]},{},[1]);
+},{"./math":30,"cannon-es":5}]},{},[1]);
