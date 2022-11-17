@@ -18758,7 +18758,7 @@ module.exports = AFRAME.registerSystem('physics', {
                                              label: Coll Keys`)
       }
 
-      scene.setAttribute("stats-group__tick", `label: Physics Ticks: Median${space}90th % ${space} Max`)
+      scene.setAttribute("stats-group__tick", `label: Physics Ticks: Median${space}90th %${space}Max`)
       scene.setAttribute("stats-row__1", `group: tick;
                                           event:physics-tick-summary;
                                           properties: before.percentile__50, 
