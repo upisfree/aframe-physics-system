@@ -144,6 +144,7 @@ module.exports = AFRAME.registerSystem('physics', {
 
     if (this.statsToConsole || this.statsToEvents || this.statsToPanel) {
       this.trackPerf = true;
+      this.tickCounter = 0;
       
       this.statsTickData = {};
       this.statsBodyData = {};
@@ -153,10 +154,7 @@ module.exports = AFRAME.registerSystem('physics', {
         "local": () => this.countBodiesCannon(false),
         "worker": () => this.countBodiesCannon(true)
       }
-    }
-
-    if (this.trackPerf) {
-      this.tickCounter = 0;
+      
       const scene = this.el.sceneEl;
       scene.setAttribute("stats-collector", `inEvent: physics-tick-data;
                                              properties: before, after, engine, total;
