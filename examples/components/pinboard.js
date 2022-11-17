@@ -167,7 +167,7 @@ AFRAME.registerComponent('tick-time-display', {
      
    if (this.data.sceneOutputEl) {
      const d = evt.detail
-     this.data.sceneOutputEl.setAttribute("text", `value: Physics Tick Length (msecs)  (over 100 ticks)\n--------------- Median --- 90th % --- Max --
+     this.data.sceneOutputEl.setAttribute("text", `value: Physics Tick Length (msecs)  (over 100 ticks)\n--------------- Median --- 90th% --- 99th% --
         Before:  \t${d.before.percentile__50.padStart(7, ' ')}\t${d.before.percentile__90.padStart(7, ' ')}\t${d.before.max.padStart(7, ' ')}
         After:   \t${d.after.percentile__50.padStart(7, ' ')}\t${d.after.percentile__90.padStart(7, ' ')}\t${d.after.max.padStart(7, ' ')}
         Engine:  \t${d.engine.percentile__50.padStart(7, ' ')}\t${d.engine.percentile__90.padStart(7, ' ')}\t${d.engine.max.padStart(7, ' ')}
