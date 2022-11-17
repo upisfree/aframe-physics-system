@@ -154,6 +154,18 @@ module.exports = AFRAME.registerSystem('physics', {
         "local": () => this.countBodiesCannon(false),
         "worker": () => this.countBodiesCannon(true)
       }
+
+      this.bodyTypeToStatsPropertyMap = {
+        "ammo": {
+          [TYPE.STATIC] : "staticBodies",
+          [TYPE.KINEMATIC] : "kinematicBodies",
+          [TYPE.DYNAMIC] : "dynamicBodies",
+        }, 
+        "cannon": {
+          [CANNON.Body.STATIC] : "staticBodies",
+          [CANNON.Body.DYNAMIC] : "dynamicBodies"
+        }
+      }
       
       const scene = this.el.sceneEl;
       scene.setAttribute("stats-collector", `inEvent: physics-tick-data;
@@ -316,24 +328,8 @@ module.exports = AFRAME.registerSystem('physics', {
     }
 
     this.driver.els.forEach((el) => {
-
-      switch(type(el)) {
-        case TYPE.STATIC:
-          statsData.staticBodies++ 
-          break;
-
-        case TYPE.DYNAMIC:
-          statsData.dynamicBodies++ 
-          break;
-
-        case TYPE.KINEMATIC:
-          statsData.kinematicBodies++ 
-          break;
-        
-        default:
-          console.error("Unexpected body type:", type(el))
-          break;
-      }
+      const property = this.bodyTypeToStatsPropertyMap["ammo"][type(el)]
+      statsData[property]++
     })
   },
 
@@ -342,26 +338,13 @@ module.exports = AFRAME.registerSystem('physics', {
     const statsData = this.statsBodyData
     statsData.contacts = worker ? this.driver.contacts.length : this.driver.world.contacts.length;
     statsData.staticBodies = 0
-    statsData.kinematicBodies = 0
     statsData.dynamicBodies = 0
 
     const bodies = worker ? Object.values(this.driver.bodies)  : this.driver.world.bodies
 
     bodies.forEach((body) => {
-
-      switch(body.type) {
-        case CANNON.Body.STATIC:
-          statsData.staticBodies++ 
-          break;
-
-        case CANNON.Body.DYNAMIC:
-          statsData.dynamicBodies++ 
-          break;
-
-        default:
-          console.error("Unexpected body type:", body.type)
-          break;
-      }
+      const property = this.bodyTypeToStatsPropertyMap["cannon"][body.type]
+      statsData[property]++
     })
   },
 
