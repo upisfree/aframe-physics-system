@@ -252,6 +252,10 @@ Any entity with an `ammo-body` component can also have 1 or more `ammo-shape` co
 - `fit: all` – Requires a mesh to exist on the entity. The specified shape will be created to contain all the vertices of the mesh.
 - `fit: manual` – Does not require a mesh, however you must specifiy either the `halfExtents` or `sphereRadius` manually. This is not supported for `hull`, `hacd`, `vhacd` and `mesh` types.
 
+Note that in general, `fit: manual` is more performant than `fit: all`.  This is because  `fit: all` iterates over every point in the geometry to determine a suitable bounding volume, whereas `fit: manual` can just create the shape to the specified parameters.  This is particularly important if you are going to be spawning new instances of objects while the physics simulation is ongoing.
+
+Note that there is currently no caching of shapes generated from geometries, so even if you are creating shapes for the same geometry over & over you'll still pay this performance penalty for each new `ammo-shape`.
+
 ### `ammo-constraint`
 
 The `ammo-constraint` component is used to bind `ammo-bodies` together using hinges, fixed distances, or fixed attachment points. Note that an `ammo-shape` is not required for `ammo-constraint` to work, however you may get strange results with some constraint types.
