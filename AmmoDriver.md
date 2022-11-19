@@ -134,7 +134,15 @@ An `ammo-body` component may be added to any entity in a scene. While having onl
 The `type` of an ammo body can be one of the following:
 
 - `dynamic`: A freely-moving object. Dynamic bodies have mass, collide with other bodies, bounce or slow during collisions, and fall if gravity is enabled.
+
 - `static`: A fixed-position object. Other bodies may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions. These bodies should typically not be moved after initialization as they cannot impart forces on `dynamic` bodies.
+
+  - If you do re-position a static object after initialization, you'll need to explicitly update the physics system with the new position.  You can do that like this:
+
+    ```
+    this.el.components['ammo-body'].syncToPhysics();
+    ```
+
 - `kinematic`: Like a `static` body, except that they can be moved via updating the position of the entity. Unlike a `static` body, they impart forces on `dynamic` bodies when moved. Useful for animated or remote (networked) objects.
 
 #### Activation States
