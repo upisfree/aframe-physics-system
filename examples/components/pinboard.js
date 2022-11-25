@@ -69,7 +69,8 @@ AFRAME.registerComponent('dynamic-ball', {
 
       if (this.data.physics === "ammo") {
           el.setAttribute('ammo-body', 'type:dynamic')
-          el.setAttribute('ammo-shape', 'type:sphere; fit:all')
+          // Explicitly specifying a shape is more efficient than auto-fitting.
+          el.setAttribute('ammo-shape', 'type:sphere; fit:manual; sphereRadius: 0.3')
       }
       else if (this.data.physics === "cannon") {
           // necessary to explicitly specify sphere radius, as async call to 

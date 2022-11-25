@@ -134,7 +134,15 @@ An `ammo-body` component may be added to any entity in a scene. While having onl
 The `type` of an ammo body can be one of the following:
 
 - `dynamic`: A freely-moving object. Dynamic bodies have mass, collide with other bodies, bounce or slow during collisions, and fall if gravity is enabled.
+
 - `static`: A fixed-position object. Other bodies may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions. These bodies should typically not be moved after initialization as they cannot impart forces on `dynamic` bodies.
+
+  - If you do re-position a static object after initialization, you'll need to explicitly update the physics system with the new position.  You can do that like this:
+
+    ```
+    this.el.components['ammo-body'].syncToPhysics();
+    ```
+
 - `kinematic`: Like a `static` body, except that they can be moved via updating the position of the entity. Unlike a `static` body, they impart forces on `dynamic` bodies when moved. Useful for animated or remote (networked) objects.
 
 #### Activation States
@@ -251,6 +259,10 @@ Any entity with an `ammo-body` component can also have 1 or more `ammo-shape` co
 
 - `fit: all` – Requires a mesh to exist on the entity. The specified shape will be created to contain all the vertices of the mesh.
 - `fit: manual` – Does not require a mesh, however you must specifiy either the `halfExtents` or `sphereRadius` manually. This is not supported for `hull`, `hacd`, `vhacd` and `mesh` types.
+
+Note that in general, `fit: manual` is more performant than `fit: all`.  This is because  `fit: all` iterates over every point in the geometry to determine a suitable bounding volume, whereas `fit: manual` can just create the shape to the specified parameters.  This is particularly important if you are going to be spawning new instances of objects while the physics simulation is ongoing.
+
+Note that there is currently no caching of shapes generated from geometries, so even if you are creating shapes for the same geometry over & over you'll still pay this performance penalty for each new `ammo-shape`.
 
 ### `ammo-constraint`
 

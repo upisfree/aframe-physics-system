@@ -356,7 +356,9 @@ let AmmoBody = {
 
   beforeStep: function() {
     this._updateShapes();
-    if (this.data.type !== TYPE.DYNAMIC) {
+    // Note that since static objects don't move,
+    // we don't sync them to physics on a routine basis.
+    if (this.data.type === TYPE.KINEMATIC) {
       this.syncToPhysics();
     }
   },
