@@ -14523,7 +14523,7 @@ const _iterateGeometries = (function() {
   const inverse = new THREE.Matrix4();
   const bufferGeometry = new THREE.BufferGeometry();
   return function(root, options, cb) {
-    inverse.getInverse(root.matrixWorld);
+    inverse.copy(root.matrixWorld).invert();
     root.traverse(mesh => {
       if (
         mesh.isMesh &&
