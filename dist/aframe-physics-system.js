@@ -17490,7 +17490,7 @@ var Shape = {
 
         //rotate by 90 degrees similar to mesh2shape:createCylinderShape
         var quat = new CANNON.Quaternion();
-        quat.setFromEuler(90 * THREE.Math.DEG2RAD, 0, 0, 'XYZ').normalize();
+        quat.setFromEuler(90 * THREE.MathUtils.DEG2RAD, 0, 0, 'XYZ').normalize();
         orientation.mult(quat, orientation);
         break;
       default:
