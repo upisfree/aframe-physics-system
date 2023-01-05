@@ -519,13 +519,13 @@ THREE.AmmoDebugDrawer = function(scene, world, options) {
   var vertices = new Float32Array(maxBufferSize * 3);
   var colors = new Float32Array(maxBufferSize * 3);
 
-  this.geometry.addAttribute("position", new THREE.BufferAttribute(vertices, 3).setDynamic(true));
-  this.geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3).setDynamic(true));
+  this.geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3).setUsage(THREE.DynamicDrawUsage));
+  this.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3).setUsage(THREE.DynamicDrawUsage));
 
   this.index = 0;
 
   var material = new THREE.LineBasicMaterial({
-    vertexColors: THREE.VertexColors,
+    vertexColors: true,
     depthTest: !drawOnTop
   });
 
@@ -17490,7 +17490,7 @@ var Shape = {
 
         //rotate by 90 degrees similar to mesh2shape:createCylinderShape
         var quat = new CANNON.Quaternion();
-        quat.setFromEuler(90 * THREE.Math.DEG2RAD, 0, 0, 'XYZ').normalize();
+        quat.setFromEuler(90 * THREE.MathUtils.DEG2RAD, 0, 0, 'XYZ').normalize();
         orientation.mult(quat, orientation);
         break;
       default:
