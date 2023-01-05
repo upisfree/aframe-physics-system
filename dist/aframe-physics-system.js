@@ -16863,7 +16863,8 @@ var Body = {
     if (this.shouldUpdateBody) {
       this.isLoaded = true;
 
-      this._play();
+      this._pause()
+      this._play()
 
       this.el.emit('body-loaded', {body: this.el.body});
       this.shouldUpdateBody = false;

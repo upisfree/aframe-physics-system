@@ -128,7 +128,11 @@ var Body = {
     if (this.shouldUpdateBody) {
       this.isLoaded = true;
 
-      this._play();
+      // pause / play will result in the object being re-added to the
+      // physics system with the updated body / shape data.
+      // pause before playing to avoid addting the body to the system twice.
+      this._pause()
+      this._play()
 
       this.el.emit('body-loaded', {body: this.el.body});
       this.shouldUpdateBody = false;
