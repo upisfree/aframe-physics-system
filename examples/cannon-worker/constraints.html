@@ -26,13 +26,14 @@
         view code
     </a>
     <a-scene physics="driver: worker" environment>
-      <a-entity id="cameraRig"></a-entity>
+      <a-entity id="cameraRig">
         <a-entity camera look-controls wasd-controls position="0 1.6 0">
-        <a-entity cursor
-                  raycaster="objects:[force-pushable]"
-                  position="0 0 -0.5"
-                  geometry="primitive: circle; radius: 0.01; segments: 4;"
-                  material="color: #FF4444; shader: flat"></a-entity>
+          <a-entity cursor
+                    raycaster="objects:[force-pushable]"
+                    position="0 0 -0.5"
+                    geometry="primitive: circle; radius: 0.01; segments: 4;"
+                    material="color: #FF4444; shader: flat">
+          </a-entity>
         </a-entity>
         <a-entity blink-controls="cameraRig: #cameraRig; button: trigger"
                 hand-controls="hand: left" static-body="shape: sphere; sphereRadius: 0.02;" grab></a-entity>
