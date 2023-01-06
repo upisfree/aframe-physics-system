@@ -227,7 +227,7 @@ el.body.applyImpulse(
 
 | event         | description                                                  |
 | ------------- | ------------------------------------------------------------ |
-| `body-loaded` | Fired when physics body (`el.body`) has been created.        |
+| `body-loaded` | Fired when physics body (`el.body`) has been created, and has a shape configured.  Also fired if the body's shape is modified later. |
 | `collide`     | Fired when two objects collide. Touching objects may fire `collide` events frequently. Unavailable with `driver: worker`. |
 
 ### Collisions
