@@ -84,7 +84,7 @@ var Body = {
         this.shouldUpdateWireframe = true;
       }
 
-      this.isLoaded = true;
+      this.hasShape = true;
     }
 
     this.el.body = this.body;
@@ -95,7 +95,7 @@ var Body = {
       this._play();
     }
 
-    if (this.isLoaded) {
+    if (this.hasShape) {
       this.el.emit('body-loaded', {body: this.el.body});
     }
   },
@@ -131,7 +131,7 @@ var Body = {
       // physics system with the updated body / shape data.
       // But we mustn't add it twice, so any previously loaded body should be paused first.
       this.pause()
-      this.isLoaded = true;
+      this.hasShape = true;
       this.play()
 
       this.el.emit('body-loaded', {body: this.el.body});
@@ -148,7 +148,7 @@ var Body = {
    * Registers the component with the physics system, if ready.
    */
   play: function () {
-    if (this.isLoaded) this._play();
+    if (this.hasShape) this._play();
   },
 
   /**
@@ -165,7 +165,7 @@ var Body = {
    * Unregisters the component with the physics system.
    */
   pause: function () {
-    if (this.isLoaded) this._pause();
+    if (this.hasShape) this._pause();
   },
 
   _pause: function () {

@@ -59,7 +59,7 @@ suite('body', function () {
     });
 
     test('pause', function () {
-      component.isLoaded = true;
+      component.hasShape = true;
       component.system = physics;
       component.body = el.body = body;
       component.pause();
