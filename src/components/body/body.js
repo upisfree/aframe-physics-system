@@ -130,9 +130,9 @@ var Body = {
       // Calling play will result in the object being re-added to the
       // physics system with the updated body / shape data.
       // But we mustn't add it twice, so any previously loaded body should be paused first.
-      this.pause()
+      this._pause();
       this.hasShape = true;
-      this.play()
+      this._play()
 
       this.el.emit('body-loaded', {body: this.el.body});
       this.shouldUpdateBody = false;
@@ -148,13 +148,16 @@ var Body = {
    * Registers the component with the physics system, if ready.
    */
   play: function () {
-    if (this.hasShape) this._play();
+    this._play();
   },
 
   /**
    * Internal helper to register component with physics system.
    */
   _play: function () {
+
+    if (!this.hasShape) return;
+
     this.syncToPhysics();
     this.system.addComponent(this);
     this.system.addBody(this.body);
@@ -165,10 +168,13 @@ var Body = {
    * Unregisters the component with the physics system.
    */
   pause: function () {
-    if (this.hasShape) this._pause();
+    this._pause();
   },
 
   _pause: function () {
+
+    if (!this.hasShape) return;
+
     this.system.removeComponent(this);
     if (this.body) this.system.removeBody(this.body);
     if (this.wireframe) this.el.sceneEl.object3D.remove(this.wireframe);
