@@ -126,13 +126,13 @@ var Body = {
 
   tick: function () {
     if (this.shouldUpdateBody) {
-      this.isLoaded = true;
-
-      // pause / play will result in the object being re-added to the
+      
+      // Calling play will result in the object being re-added to the
       // physics system with the updated body / shape data.
-      // pause before playing to avoid addting the body to the system twice.
-      this._pause()
-      this._play()
+      // But we mustn't add it twice, so any previously loaded body should be paused first.
+      this.pause()
+      this.isLoaded = true;
+      this.play()
 
       this.el.emit('body-loaded', {body: this.el.body});
       this.shouldUpdateBody = false;
