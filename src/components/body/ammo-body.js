@@ -375,7 +375,7 @@ let AmmoBody = {
   syncToPhysics: (function() {
     const q = new THREE.Quaternion();
     const v = new THREE.Vector3();
-    const q2 = new THREE.Vector3();
+    const q2 = new THREE.Quaternion();
     const v2 = new THREE.Vector3();
     return function() {
       const el = this.el,
